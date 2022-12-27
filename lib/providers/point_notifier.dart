@@ -43,7 +43,7 @@ int binarySearch(List<Point> list, Point target) {
 ///The [getEvent] method is list of events that belong to specified group, or
 ///an empty list if the group does not exist
 ///
-///The [allEvents] method is list of all events that have been added regardless
+///The [allPoints] method is list of all events that have been added regardless
 ///of the group they belong to, the resulting list is sorted by position such
 ///that the lowest position is at the front of the list
 class PointNotifier extends ChangeNotifier {
@@ -53,7 +53,7 @@ class PointNotifier extends ChangeNotifier {
   ///by [groupId]
   ///
   ///If the group does not exist, it will be created
-  void addPoint(String groupId, Point point) {
+  void add(String groupId, Point point) {
     final targetList = _points[groupId] ??= [];
     final initialLength = targetList.length;
     final index = binarySearch(targetList, point);
@@ -68,7 +68,7 @@ class PointNotifier extends ChangeNotifier {
   ///specified by [groupId]
   ///
   ///If the group does not exist, nothing will happen
-  void removePoint(String groupId, Point point) {
+  void remove(String groupId, Point point) {
     final targetList = _points[groupId];
     if (targetList == null) {
       return;
@@ -84,7 +84,7 @@ class PointNotifier extends ChangeNotifier {
   ///Returns the list of points that belong to the group specified by [groupId]
   ///
   ///If the group does not exist, an empty list will be returned
-  List<Point> getEvents(String groupId) {
+  List<Point> points(String groupId) {
     return _points[groupId] ?? [];
   }
 
@@ -93,7 +93,7 @@ class PointNotifier extends ChangeNotifier {
   ///
   ///The resulting list is sorted by position such that the lowest position is
   ///at the front of the list
-  List<Point> allEvents() {
+  List<Point> get allPoints {
     final allPoints = <Point>[];
     _points.forEach((_, points) {
       allPoints.addAll(points);
