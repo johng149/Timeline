@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
 
@@ -15,8 +17,8 @@ class TimelineGestures extends StatefulWidget {
   final String groupId;
   final BoxConstraints constraints;
   final double height;
-  final ViewRangeNotifier viewRangeNotifier;
-  final PointNotifier pointNotifier;
+  final ChangeNotifierProvider<PointNotifier> pointNotifier;
+  final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
 
   TimelineGestures(
       {Key? key,
