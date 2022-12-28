@@ -20,4 +20,5 @@ abstract class Point {
   double get height;
   Widget get child;
   String get id;
+  String get group;
 }

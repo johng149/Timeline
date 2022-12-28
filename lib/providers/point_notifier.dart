@@ -53,13 +53,13 @@ class PointNotifier extends ChangeNotifier {
   ///by [groupId]
   ///
   ///If the group does not exist, it will be created
-  void add(String groupId, Point point) {
-    final targetList = _points[groupId] ??= [];
+  void add(Point point) {
+    final targetList = _points[point.group] ??= [];
     final initialLength = targetList.length;
     final index = binarySearch(targetList, point);
     targetList.insert(index, point);
     if (initialLength <= 0) {
-      _points[groupId] = targetList;
+      _points[point.group] = targetList;
     }
     notifyListeners();
   }

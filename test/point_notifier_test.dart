@@ -15,8 +15,8 @@ void main() {
       final container = ProviderContainer();
       final notifier = container.read(pointProvider);
       const group1 = "test group";
-      final point1 = TestPoint("1", 1.0);
-      notifier.add(group1, point1);
+      final point1 = TestPoint("1", 1.0, group1);
+      notifier.add(point1);
 
       final points = notifier.points(group1);
       final expectedPoints = [point1];
@@ -33,12 +33,12 @@ void main() {
       final container = ProviderContainer();
       final notifier = container.read(pointProvider);
       const group1 = "test group";
-      final point1 = TestPoint("1", 1.0);
-      final point2 = TestPoint("2", 2.0);
-      final point3 = TestPoint("3", 3.0);
-      notifier.add(group1, point1);
-      notifier.add(group1, point2);
-      notifier.add(group1, point3);
+      final point1 = TestPoint("1", 1.0, group1);
+      final point2 = TestPoint("2", 2.0, group1);
+      final point3 = TestPoint("3", 3.0, group1);
+      notifier.add(point1);
+      notifier.add(point2);
+      notifier.add(point3);
 
       final points = notifier.points(group1);
       final expectedPoints = [point1, point2, point3];
@@ -56,12 +56,12 @@ void main() {
       final notifier = container.read(pointProvider);
       const group1 = "test group 1";
       const group2 = "test group 2";
-      final point1 = TestPoint("1", 1.0);
-      final point2 = TestPoint("2", 2.0);
-      final point3 = TestPoint("3", 3.0);
-      notifier.add(group1, point1);
-      notifier.add(group1, point2);
-      notifier.add(group2, point3);
+      final point1 = TestPoint("1", 1.0, group1);
+      final point2 = TestPoint("2", 2.0, group1);
+      final point3 = TestPoint("3", 3.0, group2);
+      notifier.add(point1);
+      notifier.add(point2);
+      notifier.add(point3);
 
       final points1 = notifier.points(group1);
       final expectedPoints1 = [point1, point2];
@@ -88,18 +88,18 @@ void main() {
       const group1 = "test group 1";
       const group2 = "test group 2";
       const group3 = "test group 3";
-      final point1 = TestPoint("1", 1.0);
-      final point2 = TestPoint("2", 2.0);
-      final point3 = TestPoint("3", 3.0);
-      final point4 = TestPoint("4", 4.0);
-      final point5 = TestPoint("5", 5.0);
-      final point6 = TestPoint("6", 6.0);
-      notifier.add(group1, point4);
-      notifier.add(group1, point1);
-      notifier.add(group2, point2);
-      notifier.add(group3, point3);
-      notifier.add(group2, point5);
-      notifier.add(group3, point6);
+      final point1 = TestPoint("1", 1.0, group1);
+      final point2 = TestPoint("2", 2.0, group2);
+      final point3 = TestPoint("3", 3.0, group3);
+      final point4 = TestPoint("4", 4.0, group1);
+      final point5 = TestPoint("5", 5.0, group2);
+      final point6 = TestPoint("6", 6.0, group3);
+      notifier.add(point4);
+      notifier.add(point1);
+      notifier.add(point2);
+      notifier.add(point3);
+      notifier.add(point5);
+      notifier.add(point6);
 
       final points1 = notifier.points(group1);
       final expectedPoints1 = [point1, point4];
@@ -130,7 +130,7 @@ void main() {
       final container = ProviderContainer();
       final notifier = container.read(pointProvider);
       const group1 = "test group";
-      final point1 = TestPoint("1", 1.0);
+      final point1 = TestPoint("1", 1.0, group1);
 
       expect(notifier.allPoints, []);
 
@@ -146,8 +146,8 @@ void main() {
       final container = ProviderContainer();
       final notifier = container.read(pointProvider);
       const group1 = "test group";
-      final point1 = TestPoint("1", 1.0);
-      notifier.add(group1, point1);
+      final point1 = TestPoint("1", 1.0, group1);
+      notifier.add(point1);
 
       expect(notifier.allPoints, [point1]);
 
@@ -163,12 +163,12 @@ void main() {
       final container = ProviderContainer();
       final notifier = container.read(pointProvider);
       const group1 = "test group";
-      final point1 = TestPoint("1", 1.0);
-      final point2 = TestPoint("2", 2.0);
-      final point3 = TestPoint("3", 3.0);
-      notifier.add(group1, point1);
-      notifier.add(group1, point2);
-      notifier.add(group1, point3);
+      final point1 = TestPoint("1", 1.0, group1);
+      final point2 = TestPoint("2", 2.0, group1);
+      final point3 = TestPoint("3", 3.0, group1);
+      notifier.add(point1);
+      notifier.add(point2);
+      notifier.add(point3);
 
       expect(notifier.allPoints, [point1, point2, point3]);
 

@@ -9,8 +9,9 @@ class TestPoint with Point {
   final _width = 100.0;
   final String _id;
   final double _position;
+  final String _group;
 
-  TestPoint(this._id, this._position);
+  TestPoint(this._id, this._position, this._group);
 
   @override
   Widget get child => SizedBox(
@@ -35,4 +36,7 @@ class TestPoint with Point {
   String toString() {
     return "id: $_id, position: $_position";
   }
+
+  @override
+  String get group => _group;
 }

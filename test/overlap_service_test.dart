@@ -11,9 +11,9 @@ void main() {
       final service = OverlapService();
       const range = ViewRange(start: 0, end: 100);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
-      final point1 = TestPoint('1', 10);
-      final point2 = TestPoint('2', 12);
-      final point3 = TestPoint('3', 300);
+      final point1 = TestPoint('1', 10, "test group");
+      final point2 = TestPoint('2', 12, "test group");
+      final point3 = TestPoint('3', 300, "test group");
 
       service.add(point1, constraints, range);
       service.add(point2, constraints, range);
@@ -28,9 +28,9 @@ void main() {
       final service = OverlapService();
       const range = ViewRange(start: 0, end: 300);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
-      final point1 = TestPoint('1', 0);
-      final point2 = TestPoint('2', 101);
-      final point3 = TestPoint('3', 202);
+      final point1 = TestPoint('1', 0, "test group");
+      final point2 = TestPoint('2', 101, "test group");
+      final point3 = TestPoint('3', 202, "test group");
 
       service.add(point1, constraints, range);
       service.add(point2, constraints, range);
@@ -45,9 +45,9 @@ void main() {
       final service = OverlapService();
       const range = ViewRange(start: 0, end: 300);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
-      final point1 = TestPoint('1', 0);
-      final point2 = TestPoint('2', 10);
-      final point3 = TestPoint('3', 20);
+      final point1 = TestPoint('1', 0, "test group");
+      final point2 = TestPoint('2', 10, "test group");
+      final point3 = TestPoint('3', 20, "test group");
 
       service.add(point1, constraints, range);
       service.add(point2, constraints, range);
@@ -63,7 +63,7 @@ void main() {
     test("point to region", () {
       const range = ViewRange(start: 0, end: 300);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
-      final point = TestPoint('1', 10);
+      final point = TestPoint('1', 10, "test group");
       final region = pointToRegion(point, constraints, range);
       expect(region.start, 10);
       expect(region.end, 110);
@@ -72,7 +72,7 @@ void main() {
     test("point to region where range neq constraint", () {
       const range = ViewRange(start: 0, end: 300);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 600);
-      final point = TestPoint('1', 10);
+      final point = TestPoint('1', 10, "test group");
       final region = pointToRegion(point, constraints, range);
       expect(region.start, 20);
       expect(region.end, 120);
