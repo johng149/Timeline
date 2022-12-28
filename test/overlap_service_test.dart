@@ -8,7 +8,7 @@ import 'helper.dart';
 void main() {
   group("overlap service", () {
     test('two point overlap, one outside view range', () {
-      final service = OverlapService();
+      final service = OverlapService(0, 0);
       const range = ViewRange(start: 0, end: 100);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
       final point1 = TestPoint('1', 10, "test group");
@@ -25,7 +25,7 @@ void main() {
     });
 
     test("no overlap", () {
-      final service = OverlapService();
+      final service = OverlapService(0, 0);
       const range = ViewRange(start: 0, end: 300);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
       final point1 = TestPoint('1', 0, "test group");
@@ -42,7 +42,7 @@ void main() {
     });
 
     test("three overlap", () {
-      final service = OverlapService();
+      final service = OverlapService(0, 0);
       const range = ViewRange(start: 0, end: 300);
       const constraints = BoxConstraints(maxHeight: 300, maxWidth: 300);
       final point1 = TestPoint('1', 0, "test group");
