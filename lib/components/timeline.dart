@@ -213,7 +213,7 @@ Positioned signpost(
   final signpost =
       Signpost(width: 2, height: height, child: point.child(context));
   final positioned = Positioned(
-      top: height - signpostHeight,
+      top: lineHeight - height - backgroundBottomPadding - point.height,
       left: point.relativePosition(constraints, range),
       child: signpost);
   return positioned;

@@ -32,7 +32,7 @@ class CustomPoint with _$CustomPoint, Point {
   Widget child(BuildContext context) => SizedBox(
         height: 100,
         width: 100,
-        child: Text(this.id),
+        child: Card(child: Text(this.id)),
       );
 
   @override

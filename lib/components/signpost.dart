@@ -38,6 +38,7 @@ class Signpost extends StatelessWidget {
   }
 
   Widget get columnWithDot => Container(
+        padding: EdgeInsets.only(left: 1.3 + dotRadius / 2),
         height: height,
         width: width,
         child: CustomPaint(
@@ -81,7 +82,7 @@ class DotWithColumnPainter extends CustomPainter {
     canvas.drawCircle(center, radius, dotPaint);
 
     final columnStart = Offset(center.dx, center.dy - radius + 1);
-    final columnEnd = Offset(center.dx, center.dy - radius - columnLength);
+    final columnEnd = Offset(center.dx, center.dy - radius - columnLength + 3);
     canvas.drawLine(columnStart, columnEnd, columnPaint);
   }
 
