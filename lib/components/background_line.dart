@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 ///Widget that draws a line across the screen
 ///
+///The [BackgroundLine] widget is a simple widget that draws a line across the
+///screen. The line is drawn using a [CustomPaint] widget, which has a container
+///of width [constraints.maxWidth]
+///
 ///The line is drawn at the given [y] position, with the given [color] and
 ///[thickness]. The line will be drawn from the left edge of the screen to the
 ///right edge of the screen, which is determined by the given [constraints] and
 ///[leftPadding]
-///
-///The line is drawn using a [CustomPaint] widget, which has a container of
-///width [constraints.maxWidth]
 class BackgroundLine extends StatelessWidget {
   final BoxConstraints constraints;
   final double y;
