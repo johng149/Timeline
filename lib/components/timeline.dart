@@ -3,11 +3,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/components/action_bar.dart';
+import 'package:timeline/components/background_line.dart';
+import 'package:timeline/components/interaction_detector.dart';
+import 'package:timeline/components/signpost.dart';
 import 'package:timeline/models/point/point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
+import 'package:timeline/services/overlap_service.dart';
 
 ///A widget that displays zero or more points of interest on parallel lines
 ///
@@ -59,8 +63,8 @@ class Timeline extends ConsumerWidget {
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
-              return line(
-                  constraints, ref, group, points.points(group), viewRange);
+              return line(constraints, ref, group, points.points(group),
+                  viewRange, viewRangeNotifier, pointNotifier);
             }));
   }
 
@@ -94,7 +98,107 @@ class Timeline extends ConsumerWidget {
 ///and the current viewing range.
 ///
 ///These values are provided as parameters to the [line] function.
-Widget line(BoxConstraints constraints, WidgetRef ref, String group,
-    List<Point> points, ViewRange viewRange) {
-  return Placeholder();
+Widget line(
+    BoxConstraints constraints,
+    WidgetRef ref,
+    String group,
+    List<Point> points,
+    ViewRange viewRange,
+    StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier,
+    ChangeNotifierProvider<PointNotifier> pointNotifier) {
+  final visiblePoints = visible(points, viewRange);
+  final service = overlapService(visiblePoints, constraints, viewRange);
+  final lineHeight = service.height;
+  final positioned =
+      signposts(visiblePoints, service, constraints, viewRange, lineHeight);
+  final indicator = groupIndicator(group, lineHeight);
+  final interactionDetector = TimelineGestures(
+      groupId: group,
+      constraints: constraints,
+      height: lineHeight,
+      viewRangeNotifier: viewRangeNotifier,
+      pointNotifier: pointNotifier);
+  final background = backgroundLine(constraints, 15, lineHeight);
+  final renderStack = Stack(
+    children: [interactionDetector, background, ...positioned, indicator],
+  );
+  return SizedBox(
+    height: lineHeight,
+    width: constraints.maxWidth,
+    child: renderStack,
+  );
+}
+
+///background line to be drawn behind the points
+Widget backgroundLine(
+    BoxConstraints constraints, double leftPadding, double lineHeight) {
+  return Positioned(
+      top: lineHeight - 10,
+      child:
+          BackgroundLine(constraints: constraints, leftPadding: leftPadding));
+}
+
+///indicator of which group the line is displaying
+Widget groupIndicator(String group, double height, [double width = 130]) {
+  return Card(
+    child: SizedBox(
+      width: width,
+      height: height,
+      child: Center(child: Text(group)),
+    ),
+  );
+}
+
+///positioned signposts that has had the child of the given points added
+///with appropriate heights as specified by the given overlap service and
+///position as specified by the given point
+///
+///It is sorted such that the positioned widgets with the most negative top
+///values are first
+List<Positioned> signposts(List<Point> points, OverlapService service,
+    BoxConstraints constraints, ViewRange range, double lineHeight) {
+  final positioned = points
+      .map((point) => signpost(point, service, constraints, range, lineHeight))
+      .toList();
+  positioned.sort((a, b) => a.top!.compareTo(b.top!));
+  return positioned;
+}
+
+///single positioned signpost that has had the child of the given point added
+///with appropriate height as specified by the given overlap service and
+///position as specified by the given point
+Positioned signpost(Point point, OverlapService service,
+    BoxConstraints constraints, ViewRange range, double lineHeight) {
+  final height = service.heightOfPoint(point);
+  final signpost =
+      Signpost(width: point.width, height: point.height, child: point.child);
+  final positioned = Positioned(
+      top: lineHeight - height - 37,
+      left: point.relativePosition(constraints, range),
+      child: signpost);
+  return positioned;
+}
+
+///a overlap service with the given points already added
+///
+///This means that the service will have the information necessary to determine
+///the recommended height of each point as well as the total height of the line
+OverlapService overlapService(
+    List<Point> points, BoxConstraints constraints, ViewRange range) {
+  final service = OverlapService();
+  for (final point in points) {
+    service.add(point, constraints, range);
+  }
+  return service;
+}
+
+///visible is a list of points that are visible in the given view range
+List<Point> visible(List<Point> points, ViewRange viewRange) {
+  return points
+      .where((point) =>
+          (point.position >= viewRange.start &&
+              point.position <= viewRange.end) ||
+          (point.position + point.width >= viewRange.start &&
+              point.position + point.width <= viewRange.end))
+      .toList();
 }

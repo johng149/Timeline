@@ -20,8 +20,8 @@ class TimelineGestures extends StatefulWidget {
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
 
-  TimelineGestures(
-      {Key? key,
+  const TimelineGestures(
+      {super.key,
       required this.groupId,
       required this.constraints,
       required this.height,

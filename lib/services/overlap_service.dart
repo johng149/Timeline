@@ -61,7 +61,7 @@ class OverlapService {
   ///[constraints] and [range] is also needed since overlap is not based on the
   ///true position of a point. Rather, it is based on where the point would
   ///appear on the screen if it were rendered given the [range]
-  void addPoint(Point point, BoxConstraints constraints, ViewRange range) {
+  void add(Point point, BoxConstraints constraints, ViewRange range) {
     final region = pointToRegion(point, constraints, range);
     for (int i = 0; i < _layers.length; i++) {
       final layer = _layers[i];

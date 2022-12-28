@@ -20,9 +20,9 @@ class BackgroundLine extends StatelessWidget {
   const BackgroundLine(
       {super.key,
       required this.constraints,
-      required this.y,
-      required this.thickness,
-      required this.color,
+      this.y = 0.0,
+      this.thickness = 2.0,
+      this.color = Colors.black,
       this.leftPadding = 0});
 
   @override

@@ -21,9 +21,9 @@ class Signpost extends StatelessWidget {
       {super.key,
       required this.width,
       required this.height,
-      required this.dotRadius,
-      required this.dotColor,
-      required this.lineColor,
+      this.dotRadius = 8,
+      this.dotColor = Colors.black,
+      this.lineColor = Colors.black,
       required this.child});
 
   @override
