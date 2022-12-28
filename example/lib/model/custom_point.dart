@@ -29,10 +29,10 @@ class CustomPoint with _$CustomPoint, Point {
 
   ///Has the [Point] mixin which allows it to be used as a point in the timeline
   @override
-  Widget child(BuildContext context) => const SizedBox(
+  Widget child(BuildContext context) => SizedBox(
         height: 100,
         width: 100,
-        child: Placeholder(),
+        child: Text(this.id),
       );
 
   @override
