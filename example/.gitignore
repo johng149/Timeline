@@ -116,3 +116,7 @@ lib/generated_plugin_registrant.dart
 # ignore generated files
 *.freezed.dart
 *.g.dart
+generated_plugin_registrant.cc
+generated_plugin_registrant.h
+generated_plugin_registrant.cmake
+GeneratedPluginRegistrant.swift
