@@ -31,10 +31,13 @@ class Timeline extends ConsumerWidget {
   final double minActionBarHeight;
   final double maxActionBarHeight;
   final double actionBarHeightFraction;
+  final double minLineHeight;
   final StateNotifierProvider<GroupNotifier, List<String>> groupNotifier;
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
   final CreatePoint createPoint;
+  final double signpostHeight = 10;
+  final double backgroundBottomPadding = 10;
   const Timeline(
       {Key? key,
       required this.minActionBarHeight,
@@ -43,7 +46,8 @@ class Timeline extends ConsumerWidget {
       required this.groupNotifier,
       required this.viewRangeNotifier,
       required this.pointNotifier,
-      required this.createPoint})
+      required this.createPoint,
+      required this.minLineHeight})
       : super(key: key);
 
   @override
@@ -65,8 +69,19 @@ class Timeline extends ConsumerWidget {
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
-              return line(constraints, ref, group, points.points(group),
-                  viewRange, viewRangeNotifier, pointNotifier, createPoint);
+              return line(
+                  constraints,
+                  ref,
+                  group,
+                  points.points(group),
+                  viewRange,
+                  viewRangeNotifier,
+                  pointNotifier,
+                  createPoint,
+                  context,
+                  minLineHeight,
+                  signpostHeight,
+                  backgroundBottomPadding);
             }));
   }
 
@@ -108,12 +123,17 @@ Widget line(
     ViewRange viewRange,
     StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier,
     ChangeNotifierProvider<PointNotifier> pointNotifier,
-    CreatePoint createPoint) {
+    CreatePoint createPoint,
+    BuildContext context,
+    double minLineHeight,
+    double signpostHeight,
+    double backgroundBottomPadding) {
   final visiblePoints = visible(points, viewRange);
-  final service = overlapService(visiblePoints, constraints, viewRange);
-  final lineHeight = service.height;
-  final positioned =
-      signposts(visiblePoints, service, constraints, viewRange, lineHeight);
+  final service = overlapService(visiblePoints, constraints, viewRange,
+      signpostHeight, backgroundBottomPadding);
+  final lineHeight = max(service.height, minLineHeight);
+  final positioned = signposts(visiblePoints, service, constraints, viewRange,
+      lineHeight, context, backgroundBottomPadding, signpostHeight);
   final indicator = groupIndicator(group, lineHeight);
   final interactionDetector = TimelineGestures(
       groupId: group,
@@ -122,7 +142,8 @@ Widget line(
       viewRangeNotifier: viewRangeNotifier,
       pointNotifier: pointNotifier,
       createPoint: createPoint);
-  final background = backgroundLine(constraints, 15, lineHeight);
+  final background =
+      backgroundLine(constraints, 15, lineHeight, backgroundBottomPadding);
   final renderStack = Stack(
     children: [interactionDetector, background, ...positioned, indicator],
   );
@@ -134,10 +155,10 @@ Widget line(
 }
 
 ///background line to be drawn behind the points
-Widget backgroundLine(
-    BoxConstraints constraints, double leftPadding, double lineHeight) {
+Widget backgroundLine(BoxConstraints constraints, double leftPadding,
+    double lineHeight, double bottomPadding) {
   return Positioned(
-      top: lineHeight - 10,
+      top: lineHeight - bottomPadding,
       child:
           BackgroundLine(constraints: constraints, leftPadding: leftPadding));
 }
@@ -159,10 +180,18 @@ Widget groupIndicator(String group, double height, [double width = 130]) {
 ///
 ///It is sorted such that the positioned widgets with the most negative top
 ///values are first
-List<Positioned> signposts(List<Point> points, OverlapService service,
-    BoxConstraints constraints, ViewRange range, double lineHeight) {
+List<Positioned> signposts(
+    List<Point> points,
+    OverlapService service,
+    BoxConstraints constraints,
+    ViewRange range,
+    double lineHeight,
+    BuildContext context,
+    double backgroundBottomPadding,
+    double signpostHeight) {
   final positioned = points
-      .map((point) => signpost(point, service, constraints, range, lineHeight))
+      .map((point) => signpost(point, service, constraints, range, lineHeight,
+          context, backgroundBottomPadding, signpostHeight))
       .toList();
   positioned.sort((a, b) => a.top!.compareTo(b.top!));
   return positioned;
@@ -171,13 +200,20 @@ List<Positioned> signposts(List<Point> points, OverlapService service,
 ///single positioned signpost that has had the child of the given point added
 ///with appropriate height as specified by the given overlap service and
 ///position as specified by the given point
-Positioned signpost(Point point, OverlapService service,
-    BoxConstraints constraints, ViewRange range, double lineHeight) {
+Positioned signpost(
+    Point point,
+    OverlapService service,
+    BoxConstraints constraints,
+    ViewRange range,
+    double lineHeight,
+    BuildContext context,
+    double backgroundBottomPadding,
+    double signpostHeight) {
   final height = service.heightOfPoint(point);
   final signpost =
-      Signpost(width: point.width, height: point.height, child: point.child);
+      Signpost(width: 2, height: height, child: point.child(context));
   final positioned = Positioned(
-      top: lineHeight - height - 37,
+      top: height - signpostHeight,
       left: point.relativePosition(constraints, range),
       child: signpost);
   return positioned;
@@ -187,9 +223,9 @@ Positioned signpost(Point point, OverlapService service,
 ///
 ///This means that the service will have the information necessary to determine
 ///the recommended height of each point as well as the total height of the line
-OverlapService overlapService(
-    List<Point> points, BoxConstraints constraints, ViewRange range) {
-  final service = OverlapService();
+OverlapService overlapService(List<Point> points, BoxConstraints constraints,
+    ViewRange range, double signpostHeight, double bottomPadding) {
+  final service = OverlapService(signpostHeight, bottomPadding);
   for (final point in points) {
     service.add(point, constraints, range);
   }

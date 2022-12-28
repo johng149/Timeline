@@ -18,7 +18,7 @@ abstract class Point {
 
   double get width;
   double get height;
-  Widget get child;
+  Widget child(BuildContext context);
   String get id;
   String get group;
 }

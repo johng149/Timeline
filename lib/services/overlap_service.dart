@@ -55,6 +55,10 @@ class OverlapLayer {
 class OverlapService {
   final Map<String, int> _pointToLayer = {};
   final List<OverlapLayer> _layers = [];
+  final double signpostHeight;
+  final double bottomPadding;
+
+  OverlapService(this.signpostHeight, this.bottomPadding);
 
   ///Updates this service's state to reflect the addition of [point]
   ///
@@ -76,8 +80,12 @@ class OverlapService {
   }
 
   ///Recommended height for the parent widget to have
+  ///
+  ///It is the sum of all max heights of all layers
   double get height =>
-      _layers.fold(0, (value, element) => value + element._maxHeight);
+      _layers.fold(0.0, (value, element) => value + element._maxHeight) +
+      signpostHeight +
+      bottomPadding;
 
   ///Recommended height for the given [point] to be rendered at, or 0 if
   ///the [point] is not known
@@ -89,8 +97,9 @@ class OverlapService {
     //we also need to know the floor, which is the sum of all max heights of the
     //layers below the point's layer
     final floor = _layers
-        .sublist(0, layer)
-        .fold(0.0, (value, element) => value + element._maxHeight);
+            .sublist(0, layer)
+            .fold(0.0, (value, element) => value + element._maxHeight) +
+        signpostHeight;
 
     return floor;
   }

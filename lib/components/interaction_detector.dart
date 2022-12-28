@@ -49,10 +49,10 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   ///touch zooming
   Widget gestureDetector(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-        onHorizontalDragUpdate: (details) => throw UnimplementedError(),
-        onScaleUpdate: (details) => throw UnimplementedError(),
+        onHorizontalDragUpdate: (details) => drag(context, ref, details),
+        onScaleUpdate: (details) => gestureZoom(context, ref, details),
         onDoubleTapDown: (details) => _tapDownDetails = details,
-        onDoubleTap: () => throw UnimplementedError(),
+        onDoubleTap: () => createPoint(context, ref),
         child: Container(
             height: widget.height,
             width: widget.constraints.maxWidth,
@@ -62,7 +62,7 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   ///listener that detects mouse scroll event
   Widget interactionListner(BuildContext context, WidgetRef ref) {
     return Listener(
-        onPointerSignal: (event) => throw UnimplementedError(),
+        onPointerSignal: (event) => scrollZoom(context, ref, event),
         child: gestureDetector(context, ref));
   }
 
@@ -104,7 +104,8 @@ class _TimelineGesturesState extends State<TimelineGestures> {
 
   ///scrollZoom is zooming when user uses mouse scroll
   void scrollZoom(
-      BuildContext context, WidgetRef ref, PointerScrollEvent event) {
+      BuildContext context, WidgetRef ref, PointerSignalEvent event) {
+    if (event is! PointerScrollEvent) return;
     final zoomLevel = zoomingScaleFromPointerScrollEvent(event);
     final position = event.position.dx;
     zoom(context, ref, zoomLevel, position);
