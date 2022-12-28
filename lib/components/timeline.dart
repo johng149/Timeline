@@ -6,6 +6,7 @@ import 'package:timeline/components/action_bar.dart';
 import 'package:timeline/components/background_line.dart';
 import 'package:timeline/components/interaction_detector.dart';
 import 'package:timeline/components/signpost.dart';
+import 'package:timeline/definitions/create_point.dart';
 import 'package:timeline/models/point/point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
@@ -33,7 +34,7 @@ class Timeline extends ConsumerWidget {
   final StateNotifierProvider<GroupNotifier, List<String>> groupNotifier;
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
-
+  final CreatePoint createPoint;
   const Timeline(
       {Key? key,
       required this.minActionBarHeight,
@@ -41,7 +42,8 @@ class Timeline extends ConsumerWidget {
       required this.actionBarHeightFraction,
       required this.groupNotifier,
       required this.viewRangeNotifier,
-      required this.pointNotifier})
+      required this.pointNotifier,
+      required this.createPoint})
       : super(key: key);
 
   @override
@@ -64,7 +66,7 @@ class Timeline extends ConsumerWidget {
             itemBuilder: (context, index) {
               final group = groups[index];
               return line(constraints, ref, group, points.points(group),
-                  viewRange, viewRangeNotifier, pointNotifier);
+                  viewRange, viewRangeNotifier, pointNotifier, createPoint);
             }));
   }
 
@@ -105,7 +107,8 @@ Widget line(
     List<Point> points,
     ViewRange viewRange,
     StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier,
-    ChangeNotifierProvider<PointNotifier> pointNotifier) {
+    ChangeNotifierProvider<PointNotifier> pointNotifier,
+    CreatePoint createPoint) {
   final visiblePoints = visible(points, viewRange);
   final service = overlapService(visiblePoints, constraints, viewRange);
   final lineHeight = service.height;
@@ -117,7 +120,8 @@ Widget line(
       constraints: constraints,
       height: lineHeight,
       viewRangeNotifier: viewRangeNotifier,
-      pointNotifier: pointNotifier);
+      pointNotifier: pointNotifier,
+      createPoint: createPoint);
   final background = backgroundLine(constraints, 15, lineHeight);
   final renderStack = Stack(
     children: [interactionDetector, background, ...positioned, indicator],
