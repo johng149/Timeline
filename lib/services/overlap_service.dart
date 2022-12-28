@@ -92,6 +92,6 @@ class OverlapService {
         .sublist(0, layer)
         .fold(0.0, (value, element) => value + element._maxHeight);
 
-    return floor + point.height;
+    return floor;
   }
 }
