@@ -38,7 +38,7 @@ void main() {
       const group2 = "test group 2";
       notifier.add(group1);
       notifier.add(group2);
-      notifier.move(group1, 1);
+      notifier.move(1, 0);
 
       final state = container.read(groupProvider);
       expect(state, [group2, group1]);

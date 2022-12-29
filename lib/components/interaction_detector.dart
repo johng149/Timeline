@@ -114,12 +114,16 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   }
 
   ///zoom updates the view range based on given zoomLevel and position
+  ///
+  ///If zoom level is 0, nothing happens
   void zoom(
       BuildContext context, WidgetRef ref, double zoomLevel, double position) {
-    final range = ref.read(widget.viewRangeNotifier);
-    final pos = relativePosition(position, range, widget.constraints);
-    final newRange = updateViewRange(range, zoomLevel, pos);
-    ref.read(widget.viewRangeNotifier.notifier).set(newRange);
+    if (zoomLevel != 0) {
+      final range = ref.read(widget.viewRangeNotifier);
+      final pos = relativePosition(position, range, widget.constraints);
+      final newRange = updateViewRange(range, zoomLevel, pos);
+      ref.read(widget.viewRangeNotifier.notifier).set(newRange);
+    }
   }
 }
 
