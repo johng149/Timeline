@@ -7,13 +7,13 @@ import 'package:timeline/components/background_line.dart';
 import 'package:timeline/components/interaction_detector.dart';
 import 'package:timeline/components/line_drag_target.dart';
 import 'package:timeline/components/signpost.dart';
+import 'package:timeline/definitions/action_maker.dart';
 import 'package:timeline/definitions/create_point.dart';
 import 'package:timeline/models/point/point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
-import 'package:timeline/services/drag_service.dart';
 import 'package:timeline/services/overlap_service.dart';
 
 ///A widget that displays zero or more points of interest on parallel lines
@@ -40,6 +40,7 @@ class Timeline extends ConsumerWidget {
   final CreatePoint createPoint;
   final double signpostHeight = 10;
   final double backgroundBottomPadding = 10;
+  final List<ActionMaker> actions;
   const Timeline(
       {Key? key,
       required this.minActionBarHeight,
@@ -49,7 +50,8 @@ class Timeline extends ConsumerWidget {
       required this.viewRangeNotifier,
       required this.pointNotifier,
       required this.createPoint,
-      required this.minLineHeight})
+      required this.minLineHeight,
+      this.actions = const []})
       : super(key: key);
 
   @override
@@ -66,6 +68,7 @@ class Timeline extends ConsumerWidget {
     final groups = ref.watch(groupNotifier);
     final points = ref.watch(pointNotifier);
     final viewRange = ref.watch(viewRangeNotifier);
+    print(groups);
     return Expanded(
         child: ListView.builder(
             itemCount: groups.length,
@@ -100,6 +103,7 @@ class Timeline extends ConsumerWidget {
           viewRangeNotifier: viewRangeNotifier,
           pointNotifier: pointNotifier,
           ref: ref,
+          actions: actions,
         ));
   }
 
