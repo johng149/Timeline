@@ -134,7 +134,7 @@ void main() {
 
       expect(notifier.allPoints, []);
 
-      notifier.remove(group1, point1);
+      notifier.remove(point1);
 
       expect(notifier.allPoints, []);
     });
@@ -151,7 +151,7 @@ void main() {
 
       expect(notifier.allPoints, [point1]);
 
-      notifier.remove(group1, point1);
+      notifier.remove(point1);
 
       expect(notifier.allPoints, []);
     });
@@ -172,7 +172,7 @@ void main() {
 
       expect(notifier.allPoints, [point1, point2, point3]);
 
-      notifier.remove(group1, point2);
+      notifier.remove(point2);
 
       expect(notifier.allPoints, [point1, point3]);
     });

@@ -39,4 +39,9 @@ class TestPoint with Point {
 
   @override
   String get group => _group;
+
+  @override
+  Point move(String newGroup, double newPosition) {
+    throw UnimplementedError();
+  }
 }

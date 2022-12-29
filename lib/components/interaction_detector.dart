@@ -5,6 +5,7 @@ import 'package:timeline/definitions/create_point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
+import 'package:timeline/services/drag_service.dart';
 
 ///Widget that listens for user interaction with the screen
 ///
@@ -83,15 +84,12 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   }
 
   ///drag updates the view range based on the given drag details
-  void drag(BuildContext context, WidgetRef ref, DragUpdateDetails details,
-      [double scale = 0.1]) {
-    final delta = details.delta.dx * scale;
-    final range = ref.read(widget.viewRangeNotifier);
-    final newStart = range.start - delta;
-    final newEnd = range.end - delta;
-    ref
-        .read(widget.viewRangeNotifier.notifier)
-        .set(ViewRange(start: newStart, end: newEnd));
+  void drag(BuildContext context, WidgetRef ref, DragUpdateDetails details) {
+    dragHelper(
+        context: context,
+        ref: ref,
+        delta: details.delta.dx,
+        viewRangeNotifier: widget.viewRangeNotifier);
   }
 
   ///gestureZoom is zooming when user uses multi-touch
@@ -148,14 +146,6 @@ ViewRange updateViewRange(
   final newEnd = zoomPosition + (viewRange.end - zoomPosition) * zoomScale;
 
   return viewRange.copyWith(start: newStart, end: newEnd);
-}
-
-///turns position of user interaction on screen to being relative to the
-///view range instead of the screen
-double relativePosition(
-    double position, ViewRange range, BoxConstraints constraints) {
-  final ratio = position / constraints.maxWidth;
-  return range.start + range.range * ratio;
 }
 
 ///zoomingScale transforms the given zoomLevel to a scale

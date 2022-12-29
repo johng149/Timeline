@@ -12,6 +12,7 @@ import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
+import 'package:timeline/services/drag_service.dart';
 import 'package:timeline/services/overlap_service.dart';
 
 ///A widget that displays zero or more points of interest on parallel lines
@@ -70,18 +71,12 @@ class Timeline extends ConsumerWidget {
             itemBuilder: (context, index) {
               final group = groups[index];
               return line(
-                  constraints,
-                  ref,
-                  group,
-                  points.points(group),
-                  viewRange,
-                  viewRangeNotifier,
-                  pointNotifier,
-                  createPoint,
-                  context,
-                  minLineHeight,
-                  signpostHeight,
-                  backgroundBottomPadding);
+                  constraints: constraints,
+                  ref: ref,
+                  group: group,
+                  points: points.points(group),
+                  viewRange: viewRange,
+                  context: context);
             }));
   }
 
@@ -106,52 +101,120 @@ class Timeline extends ConsumerWidget {
           ref: ref,
         ));
   }
+
+  ///line is a single line of points
+  ///
+  ///Its contents depends on what group the line is supposed to be displaying,
+  ///along with the points that are associated with that group
+  ///and the current viewing range.
+  ///
+  ///These values are provided as parameters to the [line] function.
+  Widget line(
+      {required BoxConstraints constraints,
+      required WidgetRef ref,
+      required String group,
+      required List<Point> points,
+      required ViewRange viewRange,
+      required BuildContext context}) {
+    final visiblePoints = visible(points, viewRange);
+    final service = overlapService(visiblePoints, constraints, viewRange,
+        signpostHeight, backgroundBottomPadding);
+    final lineHeight = max(service.height, minLineHeight);
+    final positioned = signposts(visiblePoints, service, constraints, viewRange,
+        lineHeight, context, backgroundBottomPadding, signpostHeight);
+    final indicator = groupIndicator(group, lineHeight);
+    final interactionDetector = TimelineGestures(
+        groupId: group,
+        constraints: constraints,
+        height: lineHeight,
+        viewRangeNotifier: viewRangeNotifier,
+        pointNotifier: pointNotifier,
+        createPoint: createPoint);
+    final background =
+        backgroundLine(constraints, 15, lineHeight, backgroundBottomPadding);
+    final renderStack = Stack(
+      children: [interactionDetector, background, ...positioned, indicator],
+    );
+    final target = lineDragTarget(
+        child: renderStack,
+        constraints: constraints,
+        context: context,
+        ref: ref,
+        group: group,
+        range: viewRange);
+    return SizedBox(
+      height: lineHeight,
+      width: constraints.maxWidth,
+      child: target,
+    );
+  }
+
+  ///lineDragTarget wraps the given child in a drag target that will listen for
+  ///drag events made by signposts
+  ///
+  ///The drag events will be handled by the [dragHelper] function imported from the
+  ///drag_service.dart file: as it listens to the position of the moving
+  ///signpost to see if it is approaching the edge of the screen, and it will
+  ///scroll the screen appropriately.
+  ///
+  ///For example, if the screen's width is 1000, and the signpost is currently
+  ///being dragged at position 950 towards the right, then the screen will be
+  ///scrolled with delta of -0.08, and as the signpost moves ever closer, the
+  ///delta will approach -0.5 (the maximum delta allowed).
+  Widget lineDragTarget(
+      {required Widget child,
+      required BoxConstraints constraints,
+      required BuildContext context,
+      required WidgetRef ref,
+      required String group,
+      required ViewRange range}) {
+    return DragTarget(
+      builder: (context, candidateData, rejectedData) => child,
+      onMove: (details) {
+        final pos = details.offset.dx;
+        final delta = dragScrollDelta(pos, constraints);
+        dragHelper(
+            context: context,
+            ref: ref,
+            delta: delta,
+            viewRangeNotifier: viewRangeNotifier);
+      },
+      onAcceptWithDetails: (details) {
+        final point = details.data as Point;
+        final pos = details.offset.dx;
+        final viewRangePos = relativePosition(pos, range, constraints);
+        ref.read(pointNotifier.notifier).move(point, group, viewRangePos);
+      },
+    );
+  }
 }
 
-///line is a single line of points
+///dragScrollDelta takes in the current scroll position and the constraints,
+///and returns the delta that the screen should be scrolled by
 ///
-///Its contents depends on what group the line is supposed to be displaying,
-///along with the points that are associated with that group
-///and the current viewing range.
+///It assumes that if the scroll position is within 10% of the right edge of
+///the screen, then the screen should be scrolled to the right, and if the
+///scroll position is within 10% of the left edge of the screen, then the
+///screen should be scrolled to the left.
 ///
-///These values are provided as parameters to the [line] function.
-Widget line(
-    BoxConstraints constraints,
-    WidgetRef ref,
-    String group,
-    List<Point> points,
-    ViewRange viewRange,
-    StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier,
-    ChangeNotifierProvider<PointNotifier> pointNotifier,
-    CreatePoint createPoint,
-    BuildContext context,
-    double minLineHeight,
-    double signpostHeight,
-    double backgroundBottomPadding) {
-  final visiblePoints = visible(points, viewRange);
-  final service = overlapService(visiblePoints, constraints, viewRange,
-      signpostHeight, backgroundBottomPadding);
-  final lineHeight = max(service.height, minLineHeight);
-  final positioned = signposts(visiblePoints, service, constraints, viewRange,
-      lineHeight, context, backgroundBottomPadding, signpostHeight);
-  final indicator = groupIndicator(group, lineHeight);
-  final interactionDetector = TimelineGestures(
-      groupId: group,
-      constraints: constraints,
-      height: lineHeight,
-      viewRangeNotifier: viewRangeNotifier,
-      pointNotifier: pointNotifier,
-      createPoint: createPoint);
-  final background =
-      backgroundLine(constraints, 15, lineHeight, backgroundBottomPadding);
-  final renderStack = Stack(
-    children: [interactionDetector, background, ...positioned, indicator],
-  );
-  return SizedBox(
-    height: lineHeight,
-    width: constraints.maxWidth,
-    child: renderStack,
-  );
+///As the postion approaches the edge of the screen, the delta will approach
+///-0.5 (the maximum delta allowed) for right scrolling, and 0.5 (the maximum
+///delta allowed) for left scrolling.
+double dragScrollDelta(double pos, BoxConstraints constraints) {
+  final width = constraints.maxWidth;
+  final rightEdge = width * 0.9;
+  final leftEdge = width * 0.1;
+  if (pos > rightEdge) {
+    //interpolate such that as pos -> rightEdge, delta -> -0.5 starting from
+    //-0.08
+    return -0.08 - (((pos - rightEdge) * 0.42) / (width - rightEdge));
+  } else if (pos < leftEdge) {
+    //interpolate such that as pos -> leftEdge, delta -> 0.5 starting from
+    //0.08
+    return 0.08 + (((pos - leftEdge) * 0.42) / leftEdge);
+  } else {
+    return 0;
+  }
 }
 
 ///background line to be drawn behind the points
@@ -211,7 +274,7 @@ Positioned signpost(
     double signpostHeight) {
   final height = service.heightOfPoint(point);
   final signpost =
-      Signpost(width: 2, height: height, child: point.child(context));
+      Signpost(width: 2, height: height, id: point.id, point: point);
   final positioned = Positioned(
       top: lineHeight - height - backgroundBottomPadding - point.height,
       left: point.relativePosition(constraints, range),

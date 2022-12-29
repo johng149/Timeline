@@ -68,17 +68,25 @@ class PointNotifier extends ChangeNotifier {
   ///specified by [groupId]
   ///
   ///If the group does not exist, nothing will happen
-  void remove(String groupId, Point point) {
-    final targetList = _points[groupId];
+  void remove(Point point, {bool notify = true}) {
+    final targetList = _points[point.group];
     if (targetList == null) {
       return;
     } else {
       final initialLength = targetList.length;
       targetList.removeWhere((element) => element.id == point.id);
-      if (targetList.length != initialLength) {
+      if (targetList.length != initialLength && notify) {
         notifyListeners();
       }
     }
+  }
+
+  ///move [point] from its current group and position to the new group and
+  ///position specified by [newGroup] and [newPosition]
+  void move(Point point, String newGroup, double newPosition) {
+    remove(point, notify: false);
+    final newPoint = point.move(newGroup, newPosition);
+    add(newPoint);
   }
 
   ///Returns the list of points that belong to the group specified by [groupId]

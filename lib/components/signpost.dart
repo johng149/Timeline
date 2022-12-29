@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timeline/models/point/point.dart';
 
 ///Widget that displays child on a column with dot so it looks like a signpost
 ///
@@ -15,7 +16,8 @@ class Signpost extends StatelessWidget {
   final double dotRadius;
   final Color dotColor;
   final Color lineColor;
-  final Widget child;
+  final Point point;
+  final String id;
 
   const Signpost(
       {super.key,
@@ -24,18 +26,26 @@ class Signpost extends StatelessWidget {
       this.dotRadius = 8,
       this.dotColor = Colors.black,
       this.lineColor = Colors.black,
-      required this.child});
+      required this.id,
+      required this.point});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        child,
-        columnWithDot,
-      ],
-    );
+    return Draggable(
+        feedback: point.child(context),
+        data: point,
+        childWhenDragging: Opacity(opacity: 0.14, child: point.child(context)),
+        child: signBody(context));
   }
+
+  ///signBody contains a Column that houses the child and the columnWithDot
+  Widget signBody(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          point.child(context),
+          columnWithDot,
+        ],
+      );
 
   Widget get columnWithDot => Container(
         padding: EdgeInsets.only(left: 1.3 + dotRadius / 2),

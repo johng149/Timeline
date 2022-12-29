@@ -21,4 +21,5 @@ abstract class Point {
   Widget child(BuildContext context);
   String get id;
   String get group;
+  Point move(String newGroup, double newPosition);
 }
