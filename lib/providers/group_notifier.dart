@@ -16,9 +16,15 @@ class GroupNotifier extends StateNotifier<List<String>> {
     state = state.where((id) => id != groupId).toList();
   }
 
-  ///Removes the [groupId] from the list of group ids and inserts it at the
-  ///specified [index]
-  void move(String groupId, int index) {
-    state = state.where((id) => id != groupId).toList()..insert(index, groupId);
+  ///Moves the group id at [oldIndex] to [newIndex]
+  void move(int oldIndex, int newIndex) {
+    final List<String> newState = state;
+    final String id = newState.removeAt(oldIndex);
+    if (newIndex >= newState.length) {
+      newState.add(id);
+    } else {
+      newState.insert(newIndex, id);
+    }
+    state = newState;
   }
 }

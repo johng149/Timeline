@@ -129,6 +129,5 @@ ScrollDirAndScale dragScrollDirection(double pos, BoxConstraints constraints) {
           : 0.0;
   final scale =
       scrollDir == 0 ? 0.0 : (pos - width * 0.5).abs() / (width * 0.5) * 0.004;
-  print(scale);
   return ScrollDirAndScale(scrollDir, scale);
 }

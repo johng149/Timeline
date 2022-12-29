@@ -68,9 +68,12 @@ class Timeline extends ConsumerWidget {
     final groups = ref.watch(groupNotifier);
     final points = ref.watch(pointNotifier);
     final viewRange = ref.watch(viewRangeNotifier);
-    print(groups);
     return Expanded(
-        child: ListView.builder(
+        child: ReorderableListView.builder(
+            buildDefaultDragHandles: false,
+            onReorder: (oldIndex, newIndex) {
+              ref.read(groupNotifier.notifier).move(oldIndex, newIndex);
+            },
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
@@ -80,7 +83,8 @@ class Timeline extends ConsumerWidget {
                   group: group,
                   points: points.points(group),
                   viewRange: viewRange,
-                  context: context);
+                  context: context,
+                  index: index);
             }));
   }
 
@@ -118,6 +122,7 @@ class Timeline extends ConsumerWidget {
       {required BoxConstraints constraints,
       required WidgetRef ref,
       required String group,
+      required int index,
       required List<Point> points,
       required ViewRange viewRange,
       required BuildContext context}) {
@@ -127,7 +132,8 @@ class Timeline extends ConsumerWidget {
     final lineHeight = max(service.height, minLineHeight);
     final positioned = signposts(visiblePoints, service, constraints, viewRange,
         lineHeight, context, backgroundBottomPadding, signpostHeight);
-    final indicator = groupIndicator(group, lineHeight);
+    final indicator =
+        groupIndicator(group: group, groupIndex: index, height: lineHeight);
     final interactionDetector = TimelineGestures(
         groupId: group,
         constraints: constraints,
@@ -147,6 +153,7 @@ class Timeline extends ConsumerWidget {
         pointNotifier: pointNotifier,
         child: renderStack);
     return SizedBox(
+      key: Key('$index'),
       height: lineHeight,
       width: constraints.maxWidth,
       child: target,
@@ -164,12 +171,19 @@ Widget backgroundLine(BoxConstraints constraints, double leftPadding,
 }
 
 ///indicator of which group the line is displaying
-Widget groupIndicator(String group, double height, [double width = 130]) {
-  return Card(
-    child: SizedBox(
-      width: width,
-      height: height,
-      child: Center(child: Text(group)),
+Widget groupIndicator(
+    {required String group,
+    required int groupIndex,
+    required double height,
+    double width = 130}) {
+  return ReorderableDragStartListener(
+    index: groupIndex,
+    child: Card(
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: Center(child: Text(group)),
+      ),
     ),
   );
 }
