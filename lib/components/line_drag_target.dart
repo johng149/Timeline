@@ -36,7 +36,8 @@ class LineDragTarget extends StatefulWidget {
 }
 
 class _LineDragTargetState extends State<LineDragTarget> {
-  double? dragDirection = 0;
+  double dragDirection = 0;
+  double dragScale = 0;
   Timer? timer;
 
   @override
@@ -66,13 +67,13 @@ class _LineDragTargetState extends State<LineDragTarget> {
   ///dragScroll will scroll the screen based on the draggable's position as
   ///set by [dragDirection]
   void dragScroll(WidgetRef ref) {
-    if (dragDirection != null) {
+    if (dragDirection != 0) {
       dragHelper(
-        context: context,
-        ref: ref,
-        direction: dragDirection!,
-        viewRangeNotifier: widget.viewRangeNotifier,
-      );
+          context: context,
+          ref: ref,
+          direction: dragDirection,
+          viewRangeNotifier: widget.viewRangeNotifier,
+          scale: dragScale);
     }
   }
 
@@ -83,10 +84,11 @@ class _LineDragTargetState extends State<LineDragTarget> {
   ///also updates the [dragDirection] based on the position of the draggable
   void onMove(DragTargetDetails details, WidgetRef ref) {
     final pos = details.offset.dx;
-    final dir = dragScrollDirection(pos, widget.constraints);
+    final scrollDetails = dragScrollDirection(pos, widget.constraints);
     setState(() {
-      dragDirection = dir;
-      timer ??= Timer.periodic(Duration(milliseconds: 100), (timer) {
+      dragDirection = scrollDetails.scrollDir;
+      dragScale = scrollDetails.scale;
+      timer ??= Timer.periodic(Duration(milliseconds: 5), (timer) {
         dragScroll(ref);
       });
     });
@@ -102,6 +104,12 @@ class _LineDragTargetState extends State<LineDragTarget> {
   }
 }
 
+class ScrollDirAndScale {
+  final double scrollDir;
+  final double scale;
+  ScrollDirAndScale(this.scrollDir, this.scale);
+}
+
 ///dragScrollDelta takes in the current scroll position and the constraints,
 ///and returns the delta that the screen should be scrolled by
 ///
@@ -109,15 +117,18 @@ class _LineDragTargetState extends State<LineDragTarget> {
 ///the screen, then the screen should be scrolled to the right, and if the
 ///scroll position is within 10% of the left edge of the screen, then the
 ///screen should be scrolled to the left.
-double dragScrollDirection(double pos, BoxConstraints constraints) {
+///
+///The scale should increase as the user approaches the edge of the screen,
+///up to a maximum of 0.004, and direction is either -1,0, or 1
+ScrollDirAndScale dragScrollDirection(double pos, BoxConstraints constraints) {
   final width = constraints.maxWidth;
-  final rightEdge = width * 0.9;
-  final leftEdge = width * 0.1;
-  if (pos > rightEdge) {
-    return -1;
-  } else if (pos < leftEdge) {
-    return 1;
-  } else {
-    return 0;
-  }
+  final scrollDir = pos < width * 0.1
+      ? 1.0
+      : pos > width * 0.9
+          ? -1.0
+          : 0.0;
+  final scale =
+      scrollDir == 0 ? 0.0 : (pos - width * 0.5).abs() / (width * 0.5) * 0.004;
+  print(scale);
+  return ScrollDirAndScale(scrollDir, scale);
 }
