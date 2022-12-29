@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/components/action_bar.dart';
 import 'package:timeline/components/background_line.dart';
 import 'package:timeline/components/interaction_detector.dart';
+import 'package:timeline/components/line_drag_target.dart';
 import 'package:timeline/components/signpost.dart';
 import 'package:timeline/definitions/create_point.dart';
 import 'package:timeline/models/point/point.dart';
@@ -135,85 +136,17 @@ class Timeline extends ConsumerWidget {
     final renderStack = Stack(
       children: [interactionDetector, background, ...positioned, indicator],
     );
-    final target = lineDragTarget(
-        child: renderStack,
+    final target = LineDragTarget(
         constraints: constraints,
-        context: context,
-        ref: ref,
+        viewRangeNotifier: viewRangeNotifier,
         group: group,
-        range: viewRange);
+        pointNotifier: pointNotifier,
+        child: renderStack);
     return SizedBox(
       height: lineHeight,
       width: constraints.maxWidth,
       child: target,
     );
-  }
-
-  ///lineDragTarget wraps the given child in a drag target that will listen for
-  ///drag events made by signposts
-  ///
-  ///The drag events will be handled by the [dragHelper] function imported from the
-  ///drag_service.dart file: as it listens to the position of the moving
-  ///signpost to see if it is approaching the edge of the screen, and it will
-  ///scroll the screen appropriately.
-  ///
-  ///For example, if the screen's width is 1000, and the signpost is currently
-  ///being dragged at position 950 towards the right, then the screen will be
-  ///scrolled with delta of -0.08, and as the signpost moves ever closer, the
-  ///delta will approach -0.5 (the maximum delta allowed).
-  Widget lineDragTarget(
-      {required Widget child,
-      required BoxConstraints constraints,
-      required BuildContext context,
-      required WidgetRef ref,
-      required String group,
-      required ViewRange range}) {
-    return DragTarget(
-      builder: (context, candidateData, rejectedData) => child,
-      onMove: (details) {
-        final pos = details.offset.dx;
-        final delta = dragScrollDelta(pos, constraints);
-        dragHelper(
-            context: context,
-            ref: ref,
-            direction: delta,
-            viewRangeNotifier: viewRangeNotifier);
-      },
-      onAcceptWithDetails: (details) {
-        final point = details.data as Point;
-        final pos = details.offset.dx;
-        final viewRangePos = relativePosition(pos, range, constraints);
-        ref.read(pointNotifier.notifier).move(point, group, viewRangePos);
-      },
-    );
-  }
-}
-
-///dragScrollDelta takes in the current scroll position and the constraints,
-///and returns the delta that the screen should be scrolled by
-///
-///It assumes that if the scroll position is within 10% of the right edge of
-///the screen, then the screen should be scrolled to the right, and if the
-///scroll position is within 10% of the left edge of the screen, then the
-///screen should be scrolled to the left.
-///
-///As the postion approaches the edge of the screen, the delta will approach
-///-0.5 (the maximum delta allowed) for right scrolling, and 0.5 (the maximum
-///delta allowed) for left scrolling.
-double dragScrollDelta(double pos, BoxConstraints constraints) {
-  final width = constraints.maxWidth;
-  final rightEdge = width * 0.9;
-  final leftEdge = width * 0.1;
-  if (pos > rightEdge) {
-    //interpolate such that as pos -> rightEdge, delta -> -0.5 starting from
-    //-0.08
-    return -0.08 - (((pos - rightEdge) * 0.42) / (width - rightEdge));
-  } else if (pos < leftEdge) {
-    //interpolate such that as pos -> leftEdge, delta -> 0.5 starting from
-    //0.08
-    return 0.08 + (((pos - leftEdge) * 0.42) / leftEdge);
-  } else {
-    return 0;
   }
 }
 
