@@ -176,7 +176,7 @@ class Timeline extends ConsumerWidget {
         dragHelper(
             context: context,
             ref: ref,
-            delta: delta,
+            direction: delta,
             viewRangeNotifier: viewRangeNotifier);
       },
       onAcceptWithDetails: (details) {

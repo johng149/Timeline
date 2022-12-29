@@ -50,7 +50,8 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   ///touch zooming
   Widget gestureDetector(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-        onHorizontalDragUpdate: (details) => drag(context, ref, details),
+        onHorizontalDragUpdate: (details) =>
+            drag(context: context, ref: ref, details: details),
         onScaleUpdate: (details) => gestureZoom(context, ref, details),
         onDoubleTapDown: (details) => _tapDownDetails = details,
         onDoubleTap: () => createPoint(context, ref),
@@ -84,11 +85,14 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   }
 
   ///drag updates the view range based on the given drag details
-  void drag(BuildContext context, WidgetRef ref, DragUpdateDetails details) {
+  void drag(
+      {required BuildContext context,
+      required WidgetRef ref,
+      required DragUpdateDetails details}) {
     dragHelper(
         context: context,
         ref: ref,
-        delta: details.delta.dx,
+        direction: details.delta.dx.sign,
         viewRangeNotifier: widget.viewRangeNotifier);
   }
 

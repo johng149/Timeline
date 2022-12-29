@@ -3,16 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
 
-///dragHelper updates the view range based on the given drag details
+///dragHelper updates the view range based on the given drag direction, which
+///should be either -1 or 1. Negative will move view range to the right
 void dragHelper(
     {required BuildContext context,
     required WidgetRef ref,
-    required double delta,
+    required double direction,
     required StateNotifierProvider<ViewRangeNotifier, ViewRange>
         viewRangeNotifier,
-    double scale = 0.1}) {
-  final scaledDelta = delta * scale;
+    double scale = 0.002}) {
   final range = ref.read(viewRangeNotifier);
+  final scaledDelta = range.range * direction * scale;
   final newStart = range.start - scaledDelta;
   final newEnd = range.end - scaledDelta;
   ref
