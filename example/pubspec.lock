@@ -455,7 +455,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: c843c3fc95c293613d8e471572037a22064a96cd
+      resolved-ref: ff2e5705408b2c02a210874ace40aaba24a39740
       url: "https://github.com/johng149/Timeline.git"
     source: git
     version: "0.0.1"
