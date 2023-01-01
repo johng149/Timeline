@@ -9,17 +9,19 @@ import 'package:timeline/components/line_drag_target.dart';
 import 'package:timeline/components/signpost.dart';
 import 'package:timeline/definitions/action_maker.dart';
 import 'package:timeline/definitions/create_point.dart';
+import 'package:timeline/definitions/group_indicator_maker.dart';
 import 'package:timeline/models/point/point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
 import 'package:timeline/services/overlap_service.dart';
+import 'package:timeline/timeline.dart';
 
 ///A widget that displays zero or more points of interest on parallel lines
 ///
 ///The [Timeline] widget determines which points should be considered for
-///rendering based on given [GroupNotifier] and [PointNotifier] providers,
+///rendering based on given [GroupIdNotifier] and [PointNotifier] providers,
 ///along with which points are visible based on the given [ViewRangeNotifier]
 ///provider. The [Timeline] widget also determines the position of each point
 ///on the screen based on the view range and the constraints of the screen
@@ -34,9 +36,11 @@ class Timeline extends ConsumerWidget {
   final double maxActionBarHeight;
   final double actionBarHeightFraction;
   final double minLineHeight;
-  final StateNotifierProvider<GroupNotifier, List<String>> groupNotifier;
+  final StateNotifierProvider<GroupIdNotifier, List<String>> groupIdNotifier;
+  final ChangeNotifierProvider<GroupNameNotifier> groupNameNotifier;
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
+  final GroupIndicator indicator;
   final CreatePoint createPoint;
   final double signpostHeight = 10;
   final double backgroundBottomPadding = 10;
@@ -46,11 +50,13 @@ class Timeline extends ConsumerWidget {
       required this.minActionBarHeight,
       required this.maxActionBarHeight,
       required this.actionBarHeightFraction,
-      required this.groupNotifier,
+      required this.groupIdNotifier,
+      required this.groupNameNotifier,
       required this.viewRangeNotifier,
       required this.pointNotifier,
       required this.createPoint,
       required this.minLineHeight,
+      required this.indicator,
       this.actions = const []})
       : super(key: key);
 
@@ -65,23 +71,26 @@ class Timeline extends ConsumerWidget {
 
   ///lines is the list of lines (and their points) to be rendered
   Widget lines(BoxConstraints constraints, WidgetRef ref) {
-    final groups = ref.watch(groupNotifier);
+    final groupIds = ref.watch(groupIdNotifier);
+    final groupNames = ref.watch(groupNameNotifier);
     final points = ref.watch(pointNotifier);
     final viewRange = ref.watch(viewRangeNotifier);
     return Expanded(
         child: ReorderableListView.builder(
             buildDefaultDragHandles: false,
             onReorder: (oldIndex, newIndex) {
-              ref.read(groupNotifier.notifier).move(oldIndex, newIndex);
+              ref.read(groupIdNotifier.notifier).move(oldIndex, newIndex);
             },
-            itemCount: groups.length,
+            itemCount: groupIds.length,
             itemBuilder: (context, index) {
-              final group = groups[index];
+              final groupId = groupIds[index];
+              final groupName = groupNames.name(groupId) ?? "Unnamed Group";
               return line(
                   constraints: constraints,
                   ref: ref,
-                  group: group,
-                  points: points.points(group),
+                  groupId: groupId,
+                  groupName: groupName,
+                  points: points.points(groupId),
                   viewRange: viewRange,
                   context: context,
                   index: index);
@@ -103,7 +112,7 @@ class Timeline extends ConsumerWidget {
         height: height,
         child: ActionBar(
           height: height,
-          groupNotifier: groupNotifier,
+          groupNotifier: groupIdNotifier,
           viewRangeNotifier: viewRangeNotifier,
           pointNotifier: pointNotifier,
           ref: ref,
@@ -121,7 +130,8 @@ class Timeline extends ConsumerWidget {
   Widget line(
       {required BoxConstraints constraints,
       required WidgetRef ref,
-      required String group,
+      required String groupId,
+      required String groupName,
       required int index,
       required List<Point> points,
       required ViewRange viewRange,
@@ -133,9 +143,9 @@ class Timeline extends ConsumerWidget {
     final positioned = signposts(visiblePoints, service, constraints, viewRange,
         lineHeight, context, backgroundBottomPadding, signpostHeight);
     final indicator =
-        groupIndicator(group: group, groupIndex: index, height: lineHeight);
+        groupIndicator(group: groupName, groupIndex: index, height: lineHeight);
     final interactionDetector = TimelineGestures(
-        groupId: group,
+        groupId: groupId,
         constraints: constraints,
         height: lineHeight,
         viewRangeNotifier: viewRangeNotifier,
@@ -149,7 +159,7 @@ class Timeline extends ConsumerWidget {
     final target = LineDragTarget(
         constraints: constraints,
         viewRangeNotifier: viewRangeNotifier,
-        group: group,
+        group: groupId,
         pointNotifier: pointNotifier,
         child: renderStack);
     return SizedBox(
@@ -157,6 +167,24 @@ class Timeline extends ConsumerWidget {
       height: lineHeight,
       width: constraints.maxWidth,
       child: target,
+    );
+  }
+
+  ///indicator of which group the line is displaying
+  Widget groupIndicator(
+      {required String group,
+      required int groupIndex,
+      required double height,
+      double width = 130}) {
+    return ReorderableDragStartListener(
+      index: groupIndex,
+      child: Card(
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: indicator(group),
+        ),
+      ),
     );
   }
 }
@@ -168,24 +196,6 @@ Widget backgroundLine(BoxConstraints constraints, double leftPadding,
       top: lineHeight - bottomPadding,
       child:
           BackgroundLine(constraints: constraints, leftPadding: leftPadding));
-}
-
-///indicator of which group the line is displaying
-Widget groupIndicator(
-    {required String group,
-    required int groupIndex,
-    required double height,
-    double width = 130}) {
-  return ReorderableDragStartListener(
-    index: groupIndex,
-    child: Card(
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Center(child: Text(group)),
-      ),
-    ),
-  );
 }
 
 ///positioned signposts that has had the child of the given points added

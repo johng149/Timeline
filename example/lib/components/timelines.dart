@@ -1,5 +1,6 @@
 import 'package:example/model/custom_point.dart';
-import 'package:example/providers/group_provider.dart';
+import 'package:example/providers/group_id_provider.dart';
+import 'package:example/providers/group_name_provider.dart';
 import 'package:example/providers/point_provider.dart';
 import 'package:example/providers/view_range_provider.dart';
 import 'package:flutter/material.dart';
@@ -7,43 +8,51 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/timeline.dart';
 import 'package:uuid/uuid.dart';
 
-class Timelines extends StatelessWidget {
+class Timelines extends ConsumerWidget {
   static const uuid = Uuid();
   const Timelines({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Timeline(
         minActionBarHeight: 25,
         maxActionBarHeight: 50,
         actionBarHeightFraction: 0.1,
-        groupNotifier: groupProvider,
+        groupIdNotifier: groupIdProvider,
+        groupNameNotifier: groupNameProvider,
         viewRangeNotifier: viewRangeProvider,
         pointNotifier: pointProvider,
         createPoint: createPoint,
         minLineHeight: 75,
-        actions: const [addGroup]);
+        actions: [addGroup],
+        indicator: indicator);
+  }
+
+  Widget indicator(String groupName) {
+    return Center(child: Text(groupName));
   }
 
   ///creates a point given [position] and [group]
   Point? createPoint(double position, String group) {
     return CustomPoint(id: uuid.v4(), position: position, group: group);
   }
-}
 
-///addGroup is a button that will add a group to the timeline
-Widget addGroup(BuildContext context, WidgetRef ref) {
-  return IconButton(
-      onPressed: () {
-        Future<String?> groupName = stringDialogSimple(
-            context: context, title: 'Add Group', content: 'Group Name');
-        groupName.then((value) {
-          if (value != null) {
-            ref.read(groupProvider.notifier).add(value);
-          }
-        });
-      },
-      icon: const Icon(Icons.add));
+  ///addGroup is a button that will add a group to the timeline
+  Widget addGroup(BuildContext context, WidgetRef ref) {
+    return IconButton(
+        onPressed: () {
+          Future<String?> groupName = stringDialogSimple(
+              context: context, title: 'Add Group', content: 'Group Name');
+          groupName.then((value) {
+            if (value != null) {
+              final id = uuid.v4();
+              ref.read(groupIdProvider.notifier).add(id);
+              ref.read(groupNameProvider.notifier).add(id, value);
+            }
+          });
+        },
+        icon: const Icon(Icons.add));
+  }
 }
 
 ///Opens dialog with given title and content which asks user to enter string

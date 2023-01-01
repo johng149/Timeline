@@ -5,8 +5,9 @@ import 'package:timeline/providers/group_notifier.dart';
 void main() {
   group("group notifier", () {
     test("add group", () {
-      final groupProvider = StateNotifierProvider<GroupNotifier, List<String>>(
-          (ref) => GroupNotifier());
+      final groupProvider =
+          StateNotifierProvider<GroupIdNotifier, List<String>>(
+              (ref) => GroupIdNotifier());
       final container = ProviderContainer();
       final notifier = container.read(groupProvider.notifier);
       const group1 = "test group";
@@ -17,8 +18,9 @@ void main() {
     });
 
     test("remove group", () {
-      final groupProvider = StateNotifierProvider<GroupNotifier, List<String>>(
-          (ref) => GroupNotifier());
+      final groupProvider =
+          StateNotifierProvider<GroupIdNotifier, List<String>>(
+              (ref) => GroupIdNotifier());
       final container = ProviderContainer();
       final notifier = container.read(groupProvider.notifier);
       const group1 = "test group";
@@ -30,8 +32,9 @@ void main() {
     });
 
     test("move group", () {
-      final groupProvider = StateNotifierProvider<GroupNotifier, List<String>>(
-          (ref) => GroupNotifier());
+      final groupProvider =
+          StateNotifierProvider<GroupIdNotifier, List<String>>(
+              (ref) => GroupIdNotifier());
       final container = ProviderContainer();
       final notifier = container.read(groupProvider.notifier);
       const group1 = "test group 1";
