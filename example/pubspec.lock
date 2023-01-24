@@ -453,9 +453,11 @@ packages:
   timeline:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
-    source: path
+      path: "."
+      ref: master
+      resolved-ref: "709da197ed3b06fda65bf314c81cbc401527478e"
+      url: "https://github.com/johng149/Timeline.git"
+    source: git
     version: "0.0.1"
   timing:
     dependency: transitive
