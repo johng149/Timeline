@@ -25,11 +25,16 @@ class Timelines extends ConsumerWidget {
         createPoint: createPoint,
         minLineHeight: 75,
         actions: [addGroup],
+        pointClicked: onPointClicked,
         indicator: indicator);
   }
 
   Widget indicator(String groupName) {
     return Center(child: Text(groupName));
+  }
+
+  void onPointClicked(Point point) {
+    print("Id of point clicked: ${point.id}");
   }
 
   ///creates a point given [position] and [group]
