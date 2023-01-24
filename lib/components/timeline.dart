@@ -10,6 +10,7 @@ import 'package:timeline/components/signpost.dart';
 import 'package:timeline/definitions/action_maker.dart';
 import 'package:timeline/definitions/create_point.dart';
 import 'package:timeline/definitions/group_indicator_maker.dart';
+import 'package:timeline/definitions/point_clicked.dart';
 import 'package:timeline/models/point/point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
@@ -45,6 +46,7 @@ class Timeline extends ConsumerWidget {
   final double signpostHeight = 10;
   final double backgroundBottomPadding = 10;
   final List<ActionMaker> actions;
+  final PointClicked? pointClicked;
   const Timeline(
       {Key? key,
       required this.minActionBarHeight,
@@ -57,6 +59,7 @@ class Timeline extends ConsumerWidget {
       required this.createPoint,
       required this.minLineHeight,
       required this.indicator,
+      this.pointClicked,
       this.actions = const []})
       : super(key: key);
 
@@ -140,8 +143,16 @@ class Timeline extends ConsumerWidget {
     final service = overlapService(visiblePoints, constraints, viewRange,
         signpostHeight, backgroundBottomPadding);
     final lineHeight = max(service.height, minLineHeight);
-    final positioned = signposts(visiblePoints, service, constraints, viewRange,
-        lineHeight, context, backgroundBottomPadding, signpostHeight);
+    final positioned = signposts(
+        visiblePoints,
+        service,
+        constraints,
+        viewRange,
+        lineHeight,
+        context,
+        backgroundBottomPadding,
+        signpostHeight,
+        pointClicked);
     final indicator =
         groupIndicator(group: groupName, groupIndex: index, height: lineHeight);
     final interactionDetector = TimelineGestures(
@@ -212,10 +223,11 @@ List<Positioned> signposts(
     double lineHeight,
     BuildContext context,
     double backgroundBottomPadding,
-    double signpostHeight) {
+    double signpostHeight,
+    PointClicked? pointClicked) {
   final positioned = points
       .map((point) => signpost(point, service, constraints, range, lineHeight,
-          context, backgroundBottomPadding, signpostHeight))
+          context, backgroundBottomPadding, signpostHeight, pointClicked))
       .toList();
   positioned.sort((a, b) => a.top!.compareTo(b.top!));
   return positioned;
@@ -232,10 +244,15 @@ Positioned signpost(
     double lineHeight,
     BuildContext context,
     double backgroundBottomPadding,
-    double signpostHeight) {
+    double signpostHeight,
+    PointClicked? pointClicked) {
   final height = service.heightOfPoint(point);
-  final signpost =
-      Signpost(width: 2, height: height, id: point.id, point: point);
+  final signpost = Signpost(
+      width: 2,
+      height: height,
+      id: point.id,
+      point: point,
+      onPointClicked: pointClicked);
   final positioned = Positioned(
       top: lineHeight - height - backgroundBottomPadding - point.height,
       left: point.relativePosition(constraints, range),

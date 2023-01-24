@@ -12,3 +12,4 @@ export 'providers/group_name_notifier.dart' show GroupNameNotifier;
 export 'providers/point_notifier.dart' show PointNotifier;
 export 'providers/viewrange_notifier.dart' show ViewRangeNotifier;
 export 'definitions/create_point.dart' show CreatePoint;
+export 'definitions/point_clicked.dart' show PointClicked;

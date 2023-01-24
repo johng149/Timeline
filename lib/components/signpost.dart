@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timeline/definitions/point_clicked.dart';
 import 'package:timeline/models/point/point.dart';
 
 ///Widget that displays child on a column with dot so it looks like a signpost
@@ -18,7 +19,7 @@ class Signpost extends StatelessWidget {
   final Color lineColor;
   final Point point;
   final String id;
-
+  final PointClicked? onPointClicked;
   const Signpost(
       {super.key,
       required this.width,
@@ -27,7 +28,8 @@ class Signpost extends StatelessWidget {
       this.dotColor = Colors.black,
       this.lineColor = Colors.black,
       required this.id,
-      required this.point});
+      required this.point,
+      this.onPointClicked});
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +40,21 @@ class Signpost extends StatelessWidget {
         child: signBody(context));
   }
 
+  /// pointClickDetector is a GestureDetector that calls [onPointClicked] when
+  /// the point is clicked
+  ///
+  /// It will be wrapped around [point.child]
+  Widget pointClickDetector(BuildContext context, Widget child) =>
+      GestureDetector(
+        onTap: () => onPointClicked?.call(point),
+        child: child,
+      );
+
   ///signBody contains a Column that houses the child and the columnWithDot
   Widget signBody(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          point.child(context),
+          pointClickDetector(context, point.child(context)),
           columnWithDot,
         ],
       );

@@ -11,7 +11,7 @@ void dragHelper(
     required double direction,
     required StateNotifierProvider<ViewRangeNotifier, ViewRange>
         viewRangeNotifier,
-    double scale = 0.002}) {
+    double scale = 0.013}) {
   final range = ref.read(viewRangeNotifier);
   final scaledDelta = range.range * direction * scale;
   final newStart = range.start - scaledDelta;
