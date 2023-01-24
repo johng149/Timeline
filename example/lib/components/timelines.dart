@@ -29,8 +29,8 @@ class Timelines extends ConsumerWidget {
         indicator: indicator);
   }
 
-  Widget indicator(String groupName) {
-    return Center(child: Text(groupName));
+  Widget indicator(String groupId, String groupName) {
+    return Center(child: Text("id: $groupId, name: $groupName"));
   }
 
   void onPointClicked(Point point) {

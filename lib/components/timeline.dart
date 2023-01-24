@@ -153,8 +153,11 @@ class Timeline extends ConsumerWidget {
         backgroundBottomPadding,
         signpostHeight,
         pointClicked);
-    final indicator =
-        groupIndicator(group: groupName, groupIndex: index, height: lineHeight);
+    final indicator = groupIndicator(
+        groupId: groupId,
+        groupName: groupName,
+        groupIndex: index,
+        height: lineHeight);
     final interactionDetector = TimelineGestures(
         groupId: groupId,
         constraints: constraints,
@@ -183,7 +186,8 @@ class Timeline extends ConsumerWidget {
 
   ///indicator of which group the line is displaying
   Widget groupIndicator(
-      {required String group,
+      {required String groupId,
+      required String groupName,
       required int groupIndex,
       required double height,
       double width = 130}) {
@@ -193,7 +197,7 @@ class Timeline extends ConsumerWidget {
         child: SizedBox(
           width: width,
           height: height,
-          child: indicator(group),
+          child: indicator(groupId, groupName),
         ),
       ),
     );

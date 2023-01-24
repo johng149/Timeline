@@ -1,3 +1,3 @@
 import 'package:flutter/material.dart';
 
-typedef GroupIndicator = Widget Function(String groupName);
+typedef GroupIndicator = Widget Function(String groupId, String groupName);
