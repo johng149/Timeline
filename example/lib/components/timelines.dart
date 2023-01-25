@@ -38,8 +38,9 @@ class Timelines extends ConsumerWidget {
   }
 
   ///creates a point given [position] and [group]
-  Point? createPoint(double position, String group) {
-    return CustomPoint(id: uuid.v4(), position: position, group: group);
+  Future<Point?> createPoint(double position, String group) {
+    final point = CustomPoint(id: uuid.v4(), position: position, group: group);
+    return Future.value(point);
   }
 
   ///addGroup is a button that will add a group to the timeline

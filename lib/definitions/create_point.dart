@@ -7,4 +7,4 @@ import 'package:timeline/models/point/point.dart';
 ///with the [group] that the point should be associated with
 ///
 ///If the user cancels, the function returns null
-typedef CreatePoint = Point? Function(double position, String group);
+typedef CreatePoint = Future<Point?> Function(double position, String group);

@@ -78,9 +78,11 @@ class _TimelineGesturesState extends State<TimelineGestures> {
       final range = ref.read(widget.viewRangeNotifier);
       final pos = relativePosition(x, range, widget.constraints);
       final point = widget.createPoint(pos, widget.groupId);
-      if (point != null) {
-        ref.read(widget.pointNotifier.notifier).add(point);
-      }
+      point.then((value) {
+        if (value != null) {
+          ref.read(widget.pointNotifier.notifier).add(value);
+        }
+      });
     }
   }
 
