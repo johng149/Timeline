@@ -6,6 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class GroupIdNotifier extends StateNotifier<List<String>> {
   GroupIdNotifier() : super([]);
 
+  void initialize(List<String> groupIds) {
+    state = groupIds;
+  }
+
   ///Adds the [groupId] to the list of group ids
   void add(String groupId) {
     state = [...state, groupId];

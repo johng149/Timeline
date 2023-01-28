@@ -5,6 +5,11 @@ class GroupNameNotifier extends ChangeNotifier {
 
   Map<String, String> get groupNames => _groupNames;
 
+  void initialize(Map<String, String> groupNames) {
+    _groupNames = groupNames;
+    notifyListeners();
+  }
+
   void add(String groupId, String groupName) {
     _groupNames[groupId] = groupName;
     notifyListeners();
