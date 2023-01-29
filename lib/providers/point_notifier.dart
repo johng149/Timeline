@@ -27,13 +27,21 @@ class PointNotifier extends ChangeNotifier {
   ///by [groupId]
   ///
   ///If the group does not exist, it will be created
-  void add(Point point) {
+  void add(Point point, {bool notify = false}) {
     final targetList = _points[point.group] ??= [];
     final initialLength = targetList.length;
     final index = binarySearch(targetList, point);
     targetList.insert(index, point);
     if (initialLength <= 0) {
       _points[point.group] = targetList;
+    }
+    notifyListeners();
+  }
+
+  /// Adds a list of [points]
+  void addAll(List<Point> points) {
+    for (final point in points) {
+      add(point, notify: false);
     }
     notifyListeners();
   }
