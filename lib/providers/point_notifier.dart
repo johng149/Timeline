@@ -21,20 +21,36 @@ int binarySearch(List<Point> list, Point target) {
 ///of the group they belong to, the resulting list is sorted by position such
 ///that the lowest position is at the front of the list
 class PointNotifier extends ChangeNotifier {
+  // map between group id and list of points that belong to that group
   final Map<String, List<Point>> _points = {};
+
+  // set of all points that have been added
+  final Set<String> _allPoints = {};
 
   ///Adds the [point] to the list of points that belong to the group specified
   ///by [groupId]
   ///
-  ///If the group does not exist, it will be created
+  ///If the group does not exist, it will be created. if the point is already
+  ///added, nothing will happen
   void add(Point point, {bool notify = false}) {
+    if (_allPoints.contains(point.id)) {
+      return;
+    }
     final targetList = _points[point.group] ??= [];
     final initialLength = targetList.length;
     final index = binarySearch(targetList, point);
     targetList.insert(index, point);
+    _allPoints.add(point.id);
     if (initialLength <= 0) {
       _points[point.group] = targetList;
     }
+    notifyListeners();
+  }
+
+  /// resets all points
+  void reset() {
+    _points.clear();
+    _allPoints.clear();
     notifyListeners();
   }
 
