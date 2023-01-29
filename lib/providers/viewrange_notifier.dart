@@ -11,4 +11,9 @@ class ViewRangeNotifier extends StateNotifier<ViewRange> {
   void set(ViewRange viewRange) {
     state = viewRange;
   }
+
+  /// resets the [ViewRange] to its default value
+  void reset() {
+    state = const ViewRange();
+  }
 }
