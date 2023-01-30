@@ -74,6 +74,7 @@ class PointNotifier extends ChangeNotifier {
       final initialLength = targetList.length;
       targetList.removeWhere((element) => element.id == point.id);
       if (targetList.length != initialLength && notify) {
+        _allPoints.remove(point.id);
         notifyListeners();
       }
     }
