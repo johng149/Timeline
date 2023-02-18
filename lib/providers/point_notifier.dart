@@ -32,7 +32,7 @@ class PointNotifier extends ChangeNotifier {
   ///
   ///If the group does not exist, it will be created. if the point is already
   ///added, nothing will happen
-  void add(Point point, {bool notify = false}) {
+  void add(Point point, {bool notify = true}) {
     if (_allPoints.contains(point.id)) {
       return;
     }
