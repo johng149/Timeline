@@ -88,6 +88,17 @@ class PointNotifier extends ChangeNotifier {
     add(newPoint);
   }
 
+  /// update point with the same id as given [point]
+  ///
+  /// if no point with the same id exists, nothing will happen
+  void update(Point point) {
+    if (!_allPoints.contains(point.id)) {
+      return;
+    }
+    remove(point, notify: false);
+    add(point);
+  }
+
   ///Returns the list of points that belong to the group specified by [groupId]
   ///
   ///If the group does not exist, an empty list will be returned
