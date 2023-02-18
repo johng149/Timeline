@@ -44,7 +44,9 @@ class PointNotifier extends ChangeNotifier {
     if (initialLength <= 0) {
       _points[point.group] = targetList;
     }
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   /// resets all points
@@ -73,8 +75,8 @@ class PointNotifier extends ChangeNotifier {
     } else {
       final initialLength = targetList.length;
       targetList.removeWhere((element) => element.id == point.id);
+      _allPoints.remove(point.id);
       if (targetList.length != initialLength && notify) {
-        _allPoints.remove(point.id);
         notifyListeners();
       }
     }
