@@ -45,19 +45,25 @@ class _LineDragTargetState extends State<LineDragTarget> {
     return Consumer(builder: (context, ref, child) {
       return DragTarget(
         builder: (context, candidateData, rejectedData) => widget.child,
-        onMove: (details) => onMove(details, ref),
+        onMove: (details) => onMove(details, ref, context),
         onLeave: (details) => onLeave(),
-        onAcceptWithDetails: (details) => onAcceptWithDetails(details, ref),
+        onAcceptWithDetails: (details) =>
+            onAcceptWithDetails(details, ref, context),
       );
     });
   }
 
   ///onAcceptWithDetails will update the position of the point being dragged
-  void onAcceptWithDetails(DragTargetDetails details, WidgetRef ref) {
+  void onAcceptWithDetails(
+      DragTargetDetails details, WidgetRef ref, BuildContext context) {
     final point = details.data as Point;
     final pos = details.offset.dx;
+    final zeroedPos = zeroedPosition(pos, context);
+    if (zeroedPos == null) {
+      return;
+    }
     final range = ref.read(widget.viewRangeNotifier);
-    final viewRangePos = relativePosition(pos, range, widget.constraints);
+    final viewRangePos = relativePosition(zeroedPos, range, widget.constraints);
     onLeave();
     ref
         .read(widget.pointNotifier.notifier)
@@ -82,9 +88,10 @@ class _LineDragTargetState extends State<LineDragTarget> {
   ///It first checks to see if the Timer is null, and if it is, it will create
   ///a new Timer and periodically call [dragScroll] to scroll the screen. It
   ///also updates the [dragDirection] based on the position of the draggable
-  void onMove(DragTargetDetails details, WidgetRef ref) {
+  void onMove(DragTargetDetails details, WidgetRef ref, BuildContext context) {
     final pos = details.offset.dx;
-    final scrollDetails = dragScrollDirection(pos, widget.constraints);
+    final scrollDetails =
+        dragScrollDirection(zeroedPosition(pos, context), widget.constraints);
     setState(() {
       dragDirection = scrollDetails.scrollDir;
       dragScale = scrollDetails.scale;
@@ -120,7 +127,15 @@ class ScrollDirAndScale {
 ///
 ///The scale should increase as the user approaches the edge of the screen,
 ///up to a maximum of 0.004, and direction is either -1,0, or 1
-ScrollDirAndScale dragScrollDirection(double pos, BoxConstraints constraints) {
+///
+///if pos is null, will return ScrollDirAndScale(0,0) to avoid undesirable
+///behavior
+///
+///assumes that pos is already zeroed using [zeroedPosition]
+ScrollDirAndScale dragScrollDirection(double? pos, BoxConstraints constraints) {
+  if (pos == null) {
+    return ScrollDirAndScale(0, 0);
+  }
   final width = constraints.maxWidth;
   final scrollDir = pos < width * 0.1
       ? 1.0

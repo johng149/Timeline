@@ -28,3 +28,14 @@ double relativePosition(
   final ratio = position / constraints.maxWidth;
   return range.start + range.range * ratio;
 }
+
+///zeroes given position based on left bound of widget
+///if left bound cannot be found, returns null
+double? zeroedPosition(double position, BuildContext context) {
+  final RenderObject? renderObject = context.findRenderObject();
+  if (renderObject != null) {
+    final RenderBox box = renderObject as RenderBox;
+    final left = box.localToGlobal(Offset.zero).dx;
+    return position - left;
+  }
+}

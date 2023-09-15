@@ -103,7 +103,11 @@ class _TimelineGesturesState extends State<TimelineGestures> {
       BuildContext context, WidgetRef ref, ScaleUpdateDetails details) {
     final zoomLevel = zoomingScaleFromScaleUpdateDetails(details);
     final position = details.focalPoint.dx;
-    zoom(context, ref, zoomLevel, position);
+    final zeroedPos = zeroedPosition(position, context);
+    if (zeroedPos == null) {
+      return;
+    }
+    zoom(context, ref, zoomLevel, zeroedPos);
   }
 
   ///scrollZoom is zooming when user uses mouse scroll
@@ -112,7 +116,11 @@ class _TimelineGesturesState extends State<TimelineGestures> {
     if (event is! PointerScrollEvent) return;
     final zoomLevel = zoomingScaleFromPointerScrollEvent(event);
     final position = event.position.dx;
-    zoom(context, ref, zoomLevel, position);
+    final zeroedPos = zeroedPosition(position, context);
+    if (zeroedPos == null) {
+      return;
+    }
+    zoom(context, ref, zoomLevel, zeroedPos);
   }
 
   ///zoom updates the view range based on given zoomLevel and position

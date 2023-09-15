@@ -27,7 +27,12 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Timeline Example'),
       ),
-      body: const Timelines(),
+      body: Row(
+        children: [
+          Expanded(child: Placeholder()),
+          Expanded(child: Timelines()),
+        ],
+      ),
     );
   }
 }
