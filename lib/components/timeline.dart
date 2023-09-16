@@ -42,6 +42,7 @@ class Timeline extends ConsumerWidget {
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
   final GroupIndicator indicator;
+  final double indicatorWidth;
   final CreatePoint createPoint;
   final double signpostHeight = 10;
   final double backgroundBottomPadding = 10;
@@ -59,6 +60,7 @@ class Timeline extends ConsumerWidget {
       required this.createPoint,
       required this.minLineHeight,
       required this.indicator,
+      this.indicatorWidth = 130,
       this.pointClicked,
       this.actions = const []})
       : super(key: key);
@@ -157,7 +159,8 @@ class Timeline extends ConsumerWidget {
         groupId: groupId,
         groupName: groupName,
         groupIndex: index,
-        height: lineHeight);
+        height: lineHeight,
+        width: indicatorWidth);
     final interactionDetector = TimelineGestures(
         groupId: groupId,
         constraints: constraints,
@@ -168,7 +171,13 @@ class Timeline extends ConsumerWidget {
     final background =
         backgroundLine(constraints, 15, lineHeight, backgroundBottomPadding);
     final renderStack = Stack(
-      children: [interactionDetector, background, ...positioned, indicator],
+      children: [
+        interactionDetector,
+        background,
+        ...positioned,
+        indicator,
+        zoomPadder(height: lineHeight, width: indicatorWidth)
+      ],
     );
     final target = LineDragTarget(
         constraints: constraints,
@@ -201,6 +210,16 @@ class Timeline extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  ///container to prevent scrolling with list causing zooming
+  Widget zoomPadder({
+    required double height,
+    required double width,
+  }) {
+    // color is semi-transparent
+    return Container(
+        height: height, width: width, color: Colors.black.withOpacity(0));
   }
 }
 
