@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/components/action_bar.dart';
@@ -32,7 +33,7 @@ import 'package:timeline/timeline.dart';
 ///[minActionBarHeight] and not greater than the given [maxActionBarHeight],
 ///and will attempt to keep the action bar's size a given fraction of the
 ///screen's height, as specified by [actionBarHeightFraction].
-class Timeline extends ConsumerWidget {
+class Timeline extends StatefulWidget {
   final double minActionBarHeight;
   final double maxActionBarHeight;
   final double actionBarHeightFraction;
@@ -66,25 +67,37 @@ class Timeline extends ConsumerWidget {
       : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        children: [bar(constraints, ref), lines(constraints, ref)],
-      );
+  State<Timeline> createState() => _TimelineState();
+}
+
+class _TimelineState extends State<Timeline> {
+  bool allowScrolling = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context, ref, child) {
+      return LayoutBuilder(builder: (context, constraints) {
+        return Column(
+          children: [bar(constraints, ref), lines(constraints, ref)],
+        );
+      });
     });
   }
 
   ///lines is the list of lines (and their points) to be rendered
   Widget lines(BoxConstraints constraints, WidgetRef ref) {
-    final groupIds = ref.watch(groupIdNotifier);
-    final groupNames = ref.watch(groupNameNotifier);
-    final points = ref.watch(pointNotifier);
-    final viewRange = ref.watch(viewRangeNotifier);
+    final groupIds = ref.watch(widget.groupIdNotifier);
+    final groupNames = ref.watch(widget.groupNameNotifier);
+    final points = ref.watch(widget.pointNotifier);
+    final viewRange = ref.watch(widget.viewRangeNotifier);
     return Expanded(
         child: ReorderableListView.builder(
+            physics: allowScrolling ? null : NeverScrollableScrollPhysics(),
             buildDefaultDragHandles: false,
             onReorder: (oldIndex, newIndex) {
-              ref.read(groupIdNotifier.notifier).move(oldIndex, newIndex);
+              ref
+                  .read(widget.groupIdNotifier.notifier)
+                  .move(oldIndex, newIndex);
             },
             itemCount: groupIds.length,
             itemBuilder: (context, index) {
@@ -105,9 +118,9 @@ class Timeline extends ConsumerWidget {
   ///barHeight is the height of the action bar given the current constraints
   double barHeight(BoxConstraints constraints) {
     return min(
-        max(constraints.maxHeight * actionBarHeightFraction,
-            minActionBarHeight),
-        maxActionBarHeight);
+        max(constraints.maxHeight * widget.actionBarHeightFraction,
+            widget.minActionBarHeight),
+        widget.maxActionBarHeight);
   }
 
   ///bar is the action bar widget
@@ -117,11 +130,11 @@ class Timeline extends ConsumerWidget {
         height: height,
         child: ActionBar(
           height: height,
-          groupNotifier: groupIdNotifier,
-          viewRangeNotifier: viewRangeNotifier,
-          pointNotifier: pointNotifier,
+          groupNotifier: widget.groupIdNotifier,
+          viewRangeNotifier: widget.viewRangeNotifier,
+          pointNotifier: widget.pointNotifier,
           ref: ref,
-          actions: actions,
+          actions: widget.actions,
         ));
   }
 
@@ -143,8 +156,8 @@ class Timeline extends ConsumerWidget {
       required BuildContext context}) {
     final visiblePoints = visible(points, viewRange);
     final service = overlapService(visiblePoints, constraints, viewRange,
-        signpostHeight, backgroundBottomPadding);
-    final lineHeight = max(service.height, minLineHeight);
+        widget.signpostHeight, widget.backgroundBottomPadding);
+    final lineHeight = max(service.height, widget.minLineHeight);
     final positioned = signposts(
         visiblePoints,
         service,
@@ -152,38 +165,46 @@ class Timeline extends ConsumerWidget {
         viewRange,
         lineHeight,
         context,
-        backgroundBottomPadding,
-        signpostHeight,
-        pointClicked);
+        widget.backgroundBottomPadding,
+        widget.signpostHeight,
+        widget.pointClicked);
     final indicator = groupIndicator(
         groupId: groupId,
         groupName: groupName,
         groupIndex: index,
         height: lineHeight,
-        width: indicatorWidth);
+        width: widget.indicatorWidth);
     final interactionDetector = TimelineGestures(
-        groupId: groupId,
-        constraints: constraints,
-        height: lineHeight,
-        viewRangeNotifier: viewRangeNotifier,
-        pointNotifier: pointNotifier,
-        createPoint: createPoint);
-    final background =
-        backgroundLine(constraints, 15, lineHeight, backgroundBottomPadding);
+      groupId: groupId,
+      constraints: constraints,
+      height: lineHeight,
+      viewRangeNotifier: widget.viewRangeNotifier,
+      pointNotifier: widget.pointNotifier,
+      createPoint: widget.createPoint,
+      scrollStopper: () {
+        if (allowScrolling) {
+          setState(() {
+            allowScrolling = false;
+          });
+        }
+      },
+    );
+    final background = backgroundLine(
+        constraints, 15, lineHeight, widget.backgroundBottomPadding);
     final renderStack = Stack(
       children: [
         interactionDetector,
         background,
         ...positioned,
         indicator,
-        zoomPadder(height: lineHeight, width: indicatorWidth)
+        zoomPadder(height: lineHeight, width: widget.indicatorWidth)
       ],
     );
     final target = LineDragTarget(
         constraints: constraints,
-        viewRangeNotifier: viewRangeNotifier,
+        viewRangeNotifier: widget.viewRangeNotifier,
         group: groupId,
-        pointNotifier: pointNotifier,
+        pointNotifier: widget.pointNotifier,
         child: renderStack);
     return SizedBox(
       key: Key('$index'),
@@ -206,20 +227,34 @@ class Timeline extends ConsumerWidget {
         child: SizedBox(
           width: width,
           height: height,
-          child: indicator(groupId, groupName),
+          child: widget.indicator(groupId, groupName),
         ),
       ),
     );
   }
 
-  ///container to prevent scrolling with list causing zooming
+  ///gesture detector to enable scrolling when the user is not zooming
+  ///
+  ///user is considered to be not zooming when the user is scrolling
+  ///mouse wheel in the specified area
   Widget zoomPadder({
     required double height,
     required double width,
   }) {
     // color is semi-transparent
-    return Container(
-        height: height, width: width, color: Colors.black.withOpacity(0));
+    return Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent && !allowScrolling) {
+            setState(() {
+              allowScrolling = true;
+            });
+          }
+        },
+        child: Container(
+          height: height,
+          width: width,
+          color: Colors.transparent,
+        ));
   }
 }
 

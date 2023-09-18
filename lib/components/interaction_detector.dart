@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/definitions/create_point.dart';
+import 'package:timeline/definitions/scroll_stopper.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/point_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
@@ -16,6 +17,9 @@ import 'package:timeline/services/drag_service.dart';
 ///
 ///The space where detection occurs is determined by the given [constraints] and
 ///height
+///
+///[scrollStopper] will be called when scroll zoom occurs to ensure that
+///the outer scroll view does not scroll while the user is zooming
 class TimelineGestures extends StatefulWidget {
   final String groupId;
   final BoxConstraints constraints;
@@ -23,6 +27,7 @@ class TimelineGestures extends StatefulWidget {
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
   final CreatePoint createPoint;
+  final ScrollStopper scrollStopper;
   const TimelineGestures(
       {super.key,
       required this.groupId,
@@ -30,7 +35,8 @@ class TimelineGestures extends StatefulWidget {
       required this.height,
       required this.viewRangeNotifier,
       required this.pointNotifier,
-      required this.createPoint});
+      required this.createPoint,
+      required this.scrollStopper});
 
   @override
   State<TimelineGestures> createState() => _TimelineGesturesState();
@@ -114,6 +120,7 @@ class _TimelineGesturesState extends State<TimelineGestures> {
   void scrollZoom(
       BuildContext context, WidgetRef ref, PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
+    widget.scrollStopper();
     final zoomLevel = zoomingScaleFromPointerScrollEvent(event);
     final position = event.position.dx;
     final zeroedPos = zeroedPosition(position, context);

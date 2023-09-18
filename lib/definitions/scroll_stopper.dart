@@ -1,0 +1,1 @@
+typedef ScrollStopper = void Function();
