@@ -56,14 +56,20 @@ class _ActionBarState extends State<ActionBar> {
   Widget wrapper(Widget child) {
     return Container(
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey.shade400
+                    : Colors.black,
                 blurRadius: 5,
                 spreadRadius: 1)
-          ]),
+          ],
+          border: Border.all(
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.grey.shade400
+                  : Colors.grey.shade800)),
       child: child,
     );
   }
