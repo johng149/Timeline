@@ -16,6 +16,7 @@ import 'package:timeline/models/point/point.dart';
 import 'package:timeline/models/viewrange/viewrange.dart';
 import 'package:timeline/providers/group_notifier.dart';
 import 'package:timeline/providers/point_notifier.dart';
+import 'package:timeline/providers/point_selection_notifier.dart';
 import 'package:timeline/providers/viewrange_notifier.dart';
 import 'package:timeline/services/overlap_service.dart';
 import 'package:timeline/timeline.dart';
@@ -42,6 +43,7 @@ class Timeline extends StatefulWidget {
   final ChangeNotifierProvider<GroupNameNotifier> groupNameNotifier;
   final ChangeNotifierProvider<PointNotifier> pointNotifier;
   final StateNotifierProvider<ViewRangeNotifier, ViewRange> viewRangeNotifier;
+  final StateProvider<Point?> selectedPointProvider;
   final GroupIndicator indicator;
   final double indicatorWidth;
   final CreatePoint createPoint;
@@ -58,6 +60,7 @@ class Timeline extends StatefulWidget {
       required this.groupNameNotifier,
       required this.viewRangeNotifier,
       required this.pointNotifier,
+      required this.selectedPointProvider,
       required this.createPoint,
       required this.minLineHeight,
       required this.indicator,
@@ -167,7 +170,8 @@ class _TimelineState extends State<Timeline> {
         context,
         widget.backgroundBottomPadding,
         widget.signpostHeight,
-        widget.pointClicked);
+        widget.pointClicked,
+        widget.selectedPointProvider);
     final indicator = groupIndicator(
         groupId: groupId,
         groupName: groupName,
@@ -282,10 +286,20 @@ List<Positioned> signposts(
     BuildContext context,
     double backgroundBottomPadding,
     double signpostHeight,
-    PointClicked? pointClicked) {
+    PointClicked? pointClicked,
+    StateProvider<Point?> selectedPointProvider) {
   final positioned = points
-      .map((point) => signpost(point, service, constraints, range, lineHeight,
-          context, backgroundBottomPadding, signpostHeight, pointClicked))
+      .map((point) => signpost(
+          point,
+          service,
+          constraints,
+          range,
+          lineHeight,
+          context,
+          backgroundBottomPadding,
+          signpostHeight,
+          pointClicked,
+          selectedPointProvider))
       .toList();
   positioned.sort((a, b) => a.top!.compareTo(b.top!));
   return positioned;
@@ -303,14 +317,15 @@ Positioned signpost(
     BuildContext context,
     double backgroundBottomPadding,
     double signpostHeight,
-    PointClicked? pointClicked) {
+    PointClicked? pointClicked,
+    StateProvider<Point?> selectedPointProvider) {
   final height = service.heightOfPoint(point);
   final signpost = Signpost(
       width: 2,
       height: height,
-      id: point.id,
       point: point,
-      onPointClicked: pointClicked);
+      onPointClicked: pointClicked,
+      selectedPointProvider: selectedPointProvider);
   final positioned = Positioned(
       top: lineHeight - height - backgroundBottomPadding - point.height,
       left: point.relativePosition(constraints, range),

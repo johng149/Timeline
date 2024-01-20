@@ -29,10 +29,18 @@ class CustomPoint with _$CustomPoint, Point {
 
   ///Has the [Point] mixin which allows it to be used as a point in the timeline
   @override
-  Widget child(BuildContext context) => SizedBox(
+  Widget child(BuildContext context, bool selected) => SizedBox(
         height: 100,
         width: 100,
-        child: Card(child: Text(id)),
+        child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(
+                color: selected ? Colors.blue : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Text(id)),
       );
 
   @override

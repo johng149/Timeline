@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeline/definitions/point_clicked.dart';
 import 'package:timeline/models/point/point.dart';
 
@@ -11,15 +12,15 @@ import 'package:timeline/models/point/point.dart';
 ///a dot of a given [dotRadius] and [dotColor] at the bottom of the column.
 ///
 ///This column and dot is drawn using a [CustomPaint] widget
-class Signpost extends StatelessWidget {
+class Signpost extends ConsumerWidget {
   final double width;
   final double height;
   final double dotRadius;
   final Color dotColor;
   final Color lineColor;
   final Point point;
-  final String id;
   final PointClicked? onPointClicked;
+  final StateProvider<Point?> selectedPointProvider;
   const Signpost(
       {super.key,
       required this.width,
@@ -27,17 +28,21 @@ class Signpost extends StatelessWidget {
       this.dotRadius = 8,
       this.dotColor = Colors.black,
       this.lineColor = Colors.black,
-      required this.id,
+      required this.selectedPointProvider,
       required this.point,
       this.onPointClicked});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedPoint = ref.watch(selectedPointProvider);
+    final selected =
+        selectedPoint == null ? false : selectedPoint.id == point.id;
     return Draggable(
-        feedback: point.child(context),
+        feedback: point.child(context, selected),
         data: point,
-        childWhenDragging: Opacity(opacity: 0.14, child: point.child(context)),
-        child: signBody(context));
+        childWhenDragging:
+            Opacity(opacity: 0.14, child: point.child(context, selected)),
+        child: signBody(context, selected));
   }
 
   /// pointClickDetector is a GestureDetector that calls [onPointClicked] when
@@ -51,10 +56,10 @@ class Signpost extends StatelessWidget {
       );
 
   ///signBody contains a Column that houses the child and the columnWithDot
-  Widget signBody(BuildContext context) => Column(
+  Widget signBody(BuildContext context, bool selected) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          pointClickDetector(context, point.child(context)),
+          pointClickDetector(context, point.child(context, selected)),
           columnWithDot,
         ],
       );

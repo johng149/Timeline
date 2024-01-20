@@ -18,7 +18,7 @@ abstract class Point {
 
   double get width;
   double get height;
-  Widget child(BuildContext context);
+  Widget child(BuildContext context, bool selected);
   String get id;
   String get group;
   Point move(String newGroup, double newPosition);

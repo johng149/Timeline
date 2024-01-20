@@ -5,6 +5,7 @@ import 'package:example/providers/point_provider.dart';
 import 'package:example/providers/view_range_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timeline/providers/point_selection_notifier.dart';
 import 'package:timeline/timeline.dart';
 import 'package:uuid/uuid.dart';
 
@@ -22,10 +23,11 @@ class Timelines extends ConsumerWidget {
         groupNameNotifier: groupNameProvider,
         viewRangeNotifier: viewRangeProvider,
         pointNotifier: pointProvider,
+        selectedPointProvider: selectedPointProvider,
         createPoint: createPoint,
         minLineHeight: 75,
         actions: [addGroup],
-        pointClicked: onPointClicked,
+        pointClicked: (point) => onPointClicked(point, ref),
         indicator: indicator);
   }
 
@@ -33,7 +35,8 @@ class Timelines extends ConsumerWidget {
     return Center(child: Text("id: $groupId, name: $groupName"));
   }
 
-  void onPointClicked(Point point) {
+  void onPointClicked(Point point, WidgetRef ref) {
+    ref.read(selectedPointProvider.notifier).update((_) => point);
     print("Id of point clicked: ${point.id}");
   }
 
