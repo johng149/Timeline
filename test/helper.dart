@@ -14,7 +14,7 @@ class TestPoint with Point {
   TestPoint(this._id, this._position, this._group);
 
   @override
-  Widget child(BuildContext context) => SizedBox(
+  Widget child(BuildContext context, bool selected) => SizedBox(
         height: _height,
         width: _width,
         child: const Placeholder(),

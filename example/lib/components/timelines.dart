@@ -16,7 +16,7 @@ class Timelines extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Timeline(
-        minActionBarHeight: 25,
+        minActionBarHeight: 40,
         maxActionBarHeight: 50,
         actionBarHeightFraction: 0.1,
         groupIdNotifier: groupIdProvider,

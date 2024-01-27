@@ -129,16 +129,18 @@ class _TimelineState extends State<Timeline> {
   ///bar is the action bar widget
   Widget bar(BoxConstraints constraints, WidgetRef ref) {
     final height = barHeight(constraints);
-    return SizedBox(
-        height: height,
-        child: ActionBar(
+    return SingleChildScrollView(
+      child: SizedBox(
           height: height,
-          groupNotifier: widget.groupIdNotifier,
-          viewRangeNotifier: widget.viewRangeNotifier,
-          pointNotifier: widget.pointNotifier,
-          ref: ref,
-          actions: widget.actions,
-        ));
+          child: ActionBar(
+            height: height,
+            groupNotifier: widget.groupIdNotifier,
+            viewRangeNotifier: widget.viewRangeNotifier,
+            pointNotifier: widget.pointNotifier,
+            ref: ref,
+            actions: widget.actions,
+          )),
+    );
   }
 
   ///line is a single line of points
