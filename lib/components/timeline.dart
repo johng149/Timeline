@@ -37,6 +37,7 @@ import 'package:timeline/timeline.dart';
 class Timeline extends StatefulWidget {
   final double minActionBarHeight;
   final double maxActionBarHeight;
+  final double actionBarCollapseHeight;
   final double actionBarHeightFraction;
   final double minLineHeight;
   final StateNotifierProvider<GroupIdNotifier, List<String>> groupIdNotifier;
@@ -55,6 +56,7 @@ class Timeline extends StatefulWidget {
       {Key? key,
       required this.minActionBarHeight,
       required this.maxActionBarHeight,
+      this.actionBarCollapseHeight = 4,
       required this.actionBarHeightFraction,
       required this.groupIdNotifier,
       required this.groupNameNotifier,
@@ -126,20 +128,47 @@ class _TimelineState extends State<Timeline> {
         widget.maxActionBarHeight);
   }
 
+  ///barContainerHeight is the height of the container that holds the action bar
+  ///
+  ///Upon equal or less than [actionBarCollapseHeight], the action bar container
+  ///height will be dependent soley on constraints and [actionBarHeightFraction]
+  double barContainerHeight(BoxConstraints constraints) {
+    final height = constraints.maxHeight * widget.actionBarHeightFraction;
+    if (height <= widget.actionBarCollapseHeight) {
+      return min(constraints.maxHeight, widget.maxActionBarHeight);
+    } else {
+      return max(
+          min(height, widget.maxActionBarHeight), widget.minActionBarHeight);
+    }
+  }
+
   ///bar is the action bar widget
   Widget bar(BoxConstraints constraints, WidgetRef ref) {
     final height = barHeight(constraints);
-    return SingleChildScrollView(
-      child: SizedBox(
-          height: height,
-          child: ActionBar(
-            height: height,
-            groupNotifier: widget.groupIdNotifier,
-            viewRangeNotifier: widget.viewRangeNotifier,
-            pointNotifier: widget.pointNotifier,
-            ref: ref,
-            actions: widget.actions,
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Theme.of(context).dividerColor,
+            width: 1,
           )),
+      height: barContainerHeight(constraints),
+      width: constraints.maxWidth,
+      child: FittedBox(
+        fit: BoxFit.cover,
+        clipBehavior: Clip.hardEdge,
+        child: SizedBox(
+            width: constraints.maxWidth,
+            height: height,
+            child: ActionBar(
+              height: height,
+              groupNotifier: widget.groupIdNotifier,
+              viewRangeNotifier: widget.viewRangeNotifier,
+              pointNotifier: widget.pointNotifier,
+              ref: ref,
+              actions: widget.actions,
+            )),
+      ),
     );
   }
 

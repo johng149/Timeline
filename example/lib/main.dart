@@ -1,6 +1,7 @@
 import 'package:example/components/timelines.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resizable_widget/resizable_widget.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -15,8 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.dark,
-      home: HomePage(),
+      themeMode: ThemeMode.light,
+      home: const HomePage(),
     );
   }
 }
@@ -30,12 +31,15 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Timeline Example'),
       ),
-      body: Row(
-        children: [
-          Expanded(child: Placeholder()),
-          Expanded(child: Timelines()),
-        ],
-      ),
+      body: ResizableWidget(isHorizontalSeparator: true, children: const [
+        Row(
+          children: [
+            Expanded(child: Placeholder()),
+            Expanded(child: Timelines()),
+          ],
+        ),
+        Placeholder()
+      ]),
     );
   }
 }

@@ -36,7 +36,7 @@ class _ActionBarState extends State<ActionBar> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      return wrapper(actions(context, ref));
+      return actions(context, ref);
     });
   }
 
@@ -48,29 +48,6 @@ class _ActionBarState extends State<ActionBar> {
       children: [
         for (ActionMaker action in widget.actions) action(context, ref),
       ],
-    );
-  }
-
-  ///wrapper is a container with box decoration such that it has rounded borders
-  ///and child is given
-  Widget wrapper(Widget child) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-                color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.grey.shade400
-                    : Colors.black,
-                blurRadius: 5,
-                spreadRadius: 1)
-          ],
-          border: Border.all(
-              color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.grey.shade400
-                  : Colors.grey.shade800)),
-      child: child,
     );
   }
 }
